@@ -1,0 +1,44 @@
+{
+  "name": "@kbr/pdf-service",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./processing": {
+      "types": "./dist/processing/index.d.ts",
+      "import": "./dist/processing/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "assets"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "demo": "tsx scripts/demo.ts"
+  },
+  "dependencies": {
+    "mupdf": "^1.28.0",
+    "pdfkit": "^0.18.0",
+    "sharp": "^0.35.2",
+    "svg-to-pdfkit": "^0.1.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "@types/pdfkit": "^0.17.6",
+    "pdf-lib": "^1.17.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.2"
+  }
+}
