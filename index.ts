@@ -2,7 +2,7 @@
  * KBR PDF Service — Serviço genérico de geração de PDF com branding KINTO.
  *
  * Mantém fiel ao template: cores KINTO, header com logo KINTO_SQ_BLUE,
- * cover com logo KINTO_BLUE, footer com paginação, fontes Inter.
+ * cover com logo KINTO_BLUE, footer com paginação, fontes Toyota Type.
  *
  * Uso:
  *   import { generatePdf } from './services/kbr-pdf-service/index.js';
@@ -20,7 +20,7 @@ export type {
   PdfOverviewCard,
 } from './types.js';
 
-export { theme, colors, fonts, fontSizes, spacing } from './theme.js';
+export { theme, colors, fonts, fallbackFonts, fontSizes, spacing, SENSITIVE_DOCUMENT_NOTICE } from './theme.js';
 export type { Theme } from './theme.js';
 
 // Componentes de layout reutilizáveis (API de composição)
@@ -49,7 +49,9 @@ export type {
 export { drawCard } from './components/card.js';
 export { drawSeverityBadge, drawFilePathBadge } from './components/badge.js';
 export { drawSectionTitle } from './components/section-title.js';
-export { loadFont, loadSvg } from './assets-loader.js';
+export { drawTextWithFallback, drawSegmentedText } from './components/text-fallback.js';
+export type { FallbackTextPart } from './components/text-fallback.js';
+export { loadFont, loadFallbackFont, loadSvg } from './assets-loader.js';
 
 // Processing — image compression, PDF rasterization
 export {

@@ -6,6 +6,7 @@
  */
 import SVGtoPDF from 'svg-to-pdfkit';
 import { loadSvg } from '../assets-loader.js';
+import { drawSegmentedText, drawTextWithFallback } from './text-fallback.js';
 import type { Theme } from '../theme.js';
 
 // ─── Layout Constants ────────────────────────────────────────────────────────
@@ -46,14 +47,17 @@ export function addField(opts: AddFieldOptions): number {
   const { doc, label, value, x, y, theme, valueColor, width } = opts;
 
   doc.save();
-  doc.font(theme.fonts.bold)
-    .fontSize(10)
-    .fillColor(theme.colors.n500SlateGray)
-    .text(`${label}: `, x, y, { continued: true, width });
-  doc.font(theme.fonts.semibold)
-    .fontSize(10)
-    .fillColor(valueColor ?? theme.colors.n900Gunmetal)
-    .text(value);
+  drawSegmentedText(
+    doc,
+    [
+      { text: `${label}: `, font: theme.fonts.bold, fallbackFont: theme.fallbackFonts.bold, color: theme.colors.n500SlateGray },
+      { text: value, font: theme.fonts.semibold, fallbackFont: theme.fallbackFonts.semibold, color: valueColor ?? theme.colors.n900Gunmetal },
+    ],
+    x,
+    y,
+    10,
+    { width },
+  );
   doc.restore();
 
   return y + LAYOUT.FIELD_GAP;
@@ -77,10 +81,8 @@ export function addSimpleSectionTitle(opts: AddSimpleSectionTitleOptions): numbe
   const { doc, title, x, y, theme, fontSize = 14 } = opts;
 
   doc.save();
-  doc.font(theme.fonts.bold)
-    .fontSize(fontSize)
-    .fillColor(theme.colors.kintoBrandBlue)
-    .text(title, x, y);
+  doc.fillColor(theme.colors.kintoBrandBlue);
+  drawTextWithFallback(doc, title, x, y, theme.fonts.bold, theme.fallbackFonts.bold, fontSize);
   doc.restore();
 
   return y + fontSize + 6;
@@ -296,27 +298,25 @@ export function addTermBlock(opts: AddTermBlockOptions): number {
 
   // Title
   doc.save();
-  doc.font(theme.fonts.bold)
-    .fontSize(8)
-    .fillColor(theme.colors.n500SlateGray)
-    .text(title.toUpperCase(), x, cursorY, { characterSpacing: 0.6 });
+  doc.fillColor(theme.colors.n500SlateGray);
+  drawTextWithFallback(doc, title.toUpperCase(), x, cursorY, theme.fonts.bold, theme.fallbackFonts.bold, 8, {
+    characterSpacing: 0.6,
+  });
   cursorY += 12;
 
   // Status
   const statusColor = status === 'accepted' ? theme.colors.success : theme.colors.error;
   const statusText = statusLabels[status];
-  doc.font(theme.fonts.semibold)
-    .fontSize(12)
-    .fillColor(statusColor)
-    .text(statusText, x, cursorY);
+  doc.fillColor(statusColor);
+  drawTextWithFallback(doc, statusText, x, cursorY, theme.fonts.semibold, theme.fallbackFonts.semibold, 12);
   cursorY += 20;
 
   // Clauses
-  doc.font(theme.fonts.regular)
-    .fontSize(7)
-    .fillColor(theme.colors.n500SlateGray);
+  doc.fillColor(theme.colors.n500SlateGray);
   for (const clause of clauses) {
-    doc.text(clause, x, cursorY, { width: contentWidth });
+    drawTextWithFallback(doc, clause, x, cursorY, theme.fonts.regular, theme.fallbackFonts.regular, 7, {
+      width: contentWidth,
+    });
     cursorY += LAYOUT.TERM_CLAUSE_GAP;
   }
   doc.restore();

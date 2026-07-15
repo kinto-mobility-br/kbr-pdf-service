@@ -1,4 +1,5 @@
 import type { Theme } from '../theme.js';
+import { drawTextWithFallback } from './text-fallback.js';
 
 interface DrawSeverityBadgeArgs {
   doc: PDFKit.PDFDocument;
@@ -33,9 +34,17 @@ export function drawSeverityBadge(args: DrawSeverityBadgeArgs): BadgeBox {
     .fillColor(style.backgroundColor)
     .fill();
 
-  doc
-    .fillColor(style.textColor)
-    .text(style.label, x + paddingX, y + paddingY, { lineBreak: false });
+  doc.fillColor(style.textColor);
+  drawTextWithFallback(
+    doc,
+    style.label,
+    x + paddingX,
+    y + paddingY,
+    theme.fonts.bold,
+    theme.fallbackFonts.bold,
+    theme.fontSizes.badge,
+    { lineBreak: false },
+  );
   doc.restore();
 
   return { x, y, width, height };

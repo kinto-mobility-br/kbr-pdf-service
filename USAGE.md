@@ -10,7 +10,18 @@ Visual:
 - **Header**: logo `KINTO_SQ_BLUE` + título configurável + referência
 - **Cover**: logo `KINTO_BLUE` em destaque + kicker + título + metadata + summary + overview cards
 - **Footer**: texto confidencial + paginação automática
-- **Fontes**: família Inter (Regular, Light, Medium, SemiBold, Bold)
+- **Fontes**: família Toyota Type (Regular, Light, Book, Semibold, Bold)
+
+> ℹ️ **Fallback automático de fonte**: a fonte Toyota Type não contém glifos
+> para `ã`, `ç`, `õ`, `â`, `ê`, `ô`, `à` (maiúsculas e minúsculas) nem para o
+> travessão `—` (confirmado via `fontkit`). Para não deixar esses caracteres
+> em branco no PDF, todo o texto do serviço é desenhado com
+> `drawTextWithFallback`/`drawSegmentedText` (`components/text-fallback.ts`),
+> que troca automaticamente para a fonte Inter (já incluída em
+> `assets/fonts/`) apenas nos trechos com caracteres não suportados pela
+> Toyota Type — sem modificar nenhum arquivo de fonte. Isso é feito
+> dinamicamente checando os glifos reais da fonte (via `fontkit`), então
+> cobre qualquer caractere ausente, não só os já conhecidos.
 
 ---
 
@@ -21,7 +32,7 @@ O service depende de:
 - `svg-to-pdfkit` (>=0.1.8) — renderização de SVG inline
 - `sharp` (>=0.35) — compressão de imagens
 - `mupdf` (>=1.27) — rasterização de PDF em JPEG (WASM)
-- Pasta `assets/` com `fonts/` (Inter TTFs) e `svg/` (logos KINTO)
+- Pasta `assets/` com `fonts/` (Toyota Type TTFs) e `svg/` (logos KINTO)
 - `gs` (Ghostscript) no PATH para lidar com PDFs criptografados (opcional)
 
 Essas dependências já estão no `package.json` do service.
@@ -97,7 +108,18 @@ interface PdfReportConfig {
   coverKicker?: string;   // Default: "TECHNICAL REPORT"
   coverTitle?: string;    // Default: "Report"
   footerText?: string;    // Default: "© KINTO MOBILITY · DOCUMENTO CONFIDENCIAL"
+  openPassword?: string;  // Default: indefinido (PDF sem proteção)
 }
+```
+
+Quando `openPassword` é definido, o PDF é criptografado com AES-256 e passa a
+exigir essa senha para ser aberto em qualquer leitor:
+
+```typescript
+const buffer = await generatePdf({
+  config: { coverTitle: 'Relatório Confidencial', openPassword: 'minha-senha' },
+  summary: 'Conteúdo sensível protegido por senha de abertura.',
+});
 ```
 
 ### `PdfSection`
@@ -329,11 +351,11 @@ O service espera encontrar os assets em `assets/` (relativo ao CWD ou ao source 
 ```
 assets/
 ├── fonts/
-│   ├── Inter-Regular.ttf
-│   ├── Inter-Light.ttf
-│   ├── Inter-Medium.ttf
-│   ├── Inter-SemiBold.ttf
-│   └── Inter-Bold.ttf
+│   ├── Toyota-Type.ttf
+│   ├── Toyota-Type-Light.ttf
+│   ├── Toyota-Type-Book.ttf
+│   ├── Toyota-Type-Semibold.ttf
+│   └── Toyota-Type-Bold.ttf
 └── svg/
     ├── KINTO_BLUE.svg       ← Logo grande na capa
     ├── KINTO_SQ_BLUE.svg    ← Logo quadrado no header
@@ -341,6 +363,32 @@ assets/
     ├── KINTO_WHITE.svg
     └── KINTO_SHARE_WHITE.svg
 ```
+
+---
+
+## Script CLI: JSON chave/valor → PDF
+
+O service inclui `scripts/json-fields-pdf.ts`, um script pronto que recebe um
+JSON chave/valor e gera um PDF com cada campo renderizado como texto simples
+(rótulo em caixa alta + valor em linha própria) — sem cards ou badges — para
+facilitar a seleção e cópia dos valores. Objetos aninhados são achatados em
+`chave.subchave`; arrays são serializados como um único valor JSON.
+
+```bash
+# a partir de um arquivo
+npm run json-to-pdf -- dados.json --titulo "Cadastro do Cliente"
+
+# via stdin
+cat dados.json | npm run json-to-pdf --
+
+# protegendo o PDF com senha de abertura (AES-256)
+npm run json-to-pdf -- dados.json --senha "minha-senha"
+```
+
+Opções: `--titulo/-t`, `--saida/-o`, `--senha/-s` (ou variável de ambiente
+`PDF_PASSWORD`). Prefira a env var a `--senha` em ambientes compartilhados,
+pois argumentos de CLI podem ficar visíveis no histórico do shell e em
+listagens de processos.
 
 ---
 

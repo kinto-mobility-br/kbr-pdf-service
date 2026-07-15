@@ -1,6 +1,7 @@
 import { drawCard } from '../components/card.js';
 import { drawFilePathBadge, drawSeverityBadge } from '../components/badge.js';
 import { drawSectionTitle } from '../components/section-title.js';
+import { drawTextWithFallback } from '../components/text-fallback.js';
 import { getContentArea } from './page-chrome.js';
 import type { PdfSectionItem } from '../types.js';
 import type { Theme } from '../theme.js';
@@ -32,9 +33,10 @@ export function renderSection(args: RenderSectionArgs): void {
     doc
       .save()
       .font(fonts.regular)
-      .fontSize(fontSizes.body)
-      .fillColor(colors.n600DarkElectricBlue)
-      .text(descriptor, area.x, cursorY + 6, { width: area.width });
+      .fillColor(colors.n600DarkElectricBlue);
+    drawTextWithFallback(doc, descriptor, area.x, cursorY + 6, fonts.regular, theme.fallbackFonts.regular, fontSizes.body, {
+      width: area.width,
+    });
     cursorY = doc.y + 16;
     doc.restore();
   } else {
@@ -87,9 +89,10 @@ export function renderSection(args: RenderSectionArgs): void {
     doc
       .save()
       .font(fonts.semibold)
-      .fontSize(fontSizes.itemTitle)
-      .fillColor(colors.n900Gunmetal)
-      .text(item.title, area.x + padding, innerY, { width: textWidth });
+      .fillColor(colors.n900Gunmetal);
+    drawTextWithFallback(doc, item.title, area.x + padding, innerY, fonts.semibold, theme.fallbackFonts.semibold, fontSizes.itemTitle, {
+      width: textWidth,
+    });
     innerY = doc.y + 4;
     doc.restore();
 
@@ -102,9 +105,11 @@ export function renderSection(args: RenderSectionArgs): void {
       doc
         .save()
         .font(fonts.regular)
-        .fontSize(fontSizes.body)
-        .fillColor(colors.n800Charcoal)
-        .text(description, area.x + padding, innerY, { width: textWidth, lineGap: 2 });
+        .fillColor(colors.n800Charcoal);
+      drawTextWithFallback(doc, description, area.x + padding, innerY, fonts.regular, theme.fallbackFonts.regular, fontSizes.body, {
+        width: textWidth,
+        lineGap: 2,
+      });
       innerY = doc.y + 8;
       doc.restore();
     }
@@ -131,12 +136,17 @@ export function renderSection(args: RenderSectionArgs): void {
       doc
         .save()
         .font(fonts.regular)
-        .fontSize(fontSizes.body)
-        .fillColor(colors.n800Charcoal)
-        .text(suggestion, blockX + innerOffset, blockY + labelHeight + 2, {
-          width: textWidth - innerOffset,
-          lineGap: 2,
-        });
+        .fillColor(colors.n800Charcoal);
+      drawTextWithFallback(
+        doc,
+        suggestion,
+        blockX + innerOffset,
+        blockY + labelHeight + 2,
+        fonts.regular,
+        theme.fallbackFonts.regular,
+        fontSizes.body,
+        { width: textWidth - innerOffset, lineGap: 2 },
+      );
       const blockBottom = doc.y;
       doc.restore();
 

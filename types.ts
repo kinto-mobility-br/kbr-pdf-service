@@ -44,6 +44,12 @@ export interface PdfReportConfig {
   coverTitle?: string;
   /** Texto do rodapé esquerdo (default: "© KINTO MOBILITY · DOCUMENTO CONFIDENCIAL") */
   footerText?: string;
+  /**
+   * Senha de abertura do arquivo (user password). Quando definida, o PDF é
+   * criptografado (AES-256) e passa a exigir essa senha para ser aberto em
+   * qualquer leitor. Deixe indefinido para gerar um PDF sem proteção.
+   */
+  openPassword?: string;
 }
 
 /** Input completo para gerar um relatório PDF. */

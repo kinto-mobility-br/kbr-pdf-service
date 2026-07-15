@@ -1,4 +1,5 @@
 import type { Theme } from '../theme.js';
+import { drawTextWithFallback } from './text-fallback.js';
 
 interface DrawSectionTitleArgs {
   doc: PDFKit.PDFDocument;
@@ -25,9 +26,10 @@ export function drawSectionTitle(args: DrawSectionTitleArgs): number {
     .fill();
 
   const text = `${number}. ${title}`;
-  doc
-    .fillColor(theme.colors.n900Gunmetal)
-    .text(text, x + barWidth + gapAfterBar, y, { lineBreak: false });
+  doc.fillColor(theme.colors.n900Gunmetal);
+  drawTextWithFallback(doc, text, x + barWidth + gapAfterBar, y, theme.fonts.bold, theme.fallbackFonts.bold, fontSize, {
+    lineBreak: false,
+  });
   doc.restore();
 
   return y + lineHeight;

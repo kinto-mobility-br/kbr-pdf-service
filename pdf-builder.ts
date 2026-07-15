@@ -1,5 +1,5 @@
 import PDFDocument from 'pdfkit';
-import { loadFont } from './assets-loader.js';
+import { loadFont, loadFallbackFont } from './assets-loader.js';
 import { renderCover } from './sections/cover.js';
 import { renderSection } from './sections/section-renderer.js';
 import { renderPageHeader, renderPageFooter } from './sections/page-chrome.js';
@@ -15,6 +15,7 @@ const DEFAULT_CONFIG: Required<PdfReportConfig> = {
   coverKicker: 'TECHNICAL REPORT',
   coverTitle: 'Report',
   footerText: '© KINTO MOBILITY · DOCUMENTO CONFIDENCIAL',
+  openPassword: '',
 };
 
 export async function buildPdf(
@@ -42,6 +43,13 @@ export async function buildPdf(
     },
     bufferPages: true,
     autoFirstPage: false,
+    ...(config.openPassword
+      ? {
+          userPassword: config.openPassword,
+          pdfVersion: '1.7ext3', // habilita AES-256 (mais forte que o default RC4-40)
+          info: { Subject: theme.SENSITIVE_DOCUMENT_NOTICE },
+        }
+      : {}),
   });
 
   registerFonts(doc, theme);
@@ -105,6 +113,14 @@ function registerFonts(doc: PDFKit.PDFDocument, theme: Theme): void {
   doc.registerFont(theme.fonts.book, loadFont('book'));
   doc.registerFont(theme.fonts.semibold, loadFont('semibold'));
   doc.registerFont(theme.fonts.bold, loadFont('bold'));
+
+  // Fallback (Inter) — usado por drawTextWithFallback para os caracteres
+  // que a Toyota Type não suporta (ã, ç, õ, â, ê, ô, à).
+  doc.registerFont(theme.fallbackFonts.regular, loadFallbackFont('regular'));
+  doc.registerFont(theme.fallbackFonts.light, loadFallbackFont('light'));
+  doc.registerFont(theme.fallbackFonts.book, loadFallbackFont('book'));
+  doc.registerFont(theme.fallbackFonts.semibold, loadFallbackFont('semibold'));
+  doc.registerFont(theme.fallbackFonts.bold, loadFallbackFont('bold'));
 }
 
 function validatePdfSignature(buffer: Buffer): void {

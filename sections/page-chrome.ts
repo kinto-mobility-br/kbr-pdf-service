@@ -1,5 +1,6 @@
 import SVGtoPDF from 'svg-to-pdfkit';
 import { loadSvg } from '../assets-loader.js';
+import { drawTextWithFallback } from '../components/text-fallback.js';
 import type { Theme } from '../theme.js';
 
 interface RenderPageHeaderArgs {
@@ -26,13 +27,16 @@ export function renderPageHeader(args: RenderPageHeaderArgs): void {
 
   doc
     .font(fonts.semibold)
-    .fontSize(fontSizes.chromeStrong)
-    .fillColor(colors.kintoBrandBlue)
-    .text(headerTitle, left + logoSize + 6, top, { lineBreak: false });
+    .fillColor(colors.kintoBrandBlue);
+  drawTextWithFallback(doc, headerTitle, left + logoSize + 6, top, fonts.semibold, theme.fallbackFonts.semibold, fontSizes.chromeStrong, {
+    lineBreak: false,
+  });
 
   doc.font(fonts.regular).fontSize(fontSizes.chrome).fillColor(colors.n600DarkElectricBlue);
   const refWidth = doc.widthOfString(reference);
-  doc.text(reference, right - refWidth, top + 2, { lineBreak: false });
+  drawTextWithFallback(doc, reference, right - refWidth, top + 2, fonts.regular, theme.fallbackFonts.regular, fontSizes.chrome, {
+    lineBreak: false,
+  });
 
   // Faixa fina abaixo
   const lineY = top + 18;
@@ -73,9 +77,10 @@ export function renderPageFooter(args: RenderPageFooterArgs): void {
   const textY = bottom + 8;
   doc
     .font(fonts.bold)
-    .fontSize(fontSizes.labelCaps)
-    .fillColor(colors.n400LightSlateGray)
-    .text(footerText, left, textY, { lineBreak: false });
+    .fillColor(colors.n400LightSlateGray);
+  drawTextWithFallback(doc, footerText, left, textY, fonts.bold, theme.fallbackFonts.bold, fontSizes.labelCaps, {
+    lineBreak: false,
+  });
 
   const pageText = `PÁGINA ${pageNumber} DE ${totalPages}`;
   const pageWidth = doc.widthOfString(pageText);

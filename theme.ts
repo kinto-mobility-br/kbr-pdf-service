@@ -39,12 +39,25 @@ export const colors = {
 } as const;
 
 export const fonts = {
+  regular: 'toyota-regular',
+  light: 'toyota-light',
+  book: 'toyota-book',
+  semibold: 'toyota-semibold',
+  bold: 'toyota-bold',
+  mono: 'Courier',
+} as const;
+
+/**
+ * Fontes de fallback (Inter) registradas ao lado das Toyota Type, usadas
+ * automaticamente por `drawTextWithFallback` (components/text-fallback.ts)
+ * para os caracteres que a Toyota Type não suporta (ã, ç, õ, â, ê, ô, à).
+ */
+export const fallbackFonts = {
   regular: 'inter-regular',
   light: 'inter-light',
   book: 'inter-book',
   semibold: 'inter-semibold',
   bold: 'inter-bold',
-  mono: 'Courier',
 } as const;
 
 export const fontSizes = {
@@ -84,6 +97,15 @@ export const limits = {
   maxFieldChars: 5000,
   maxSummaryChars: 1500,
 } as const;
+
+/**
+ * Aviso exibido de forma visível no documento (e nos metadados) sempre que
+ * o PDF é gerado com senha de abertura (`config.openPassword`). Reforça que
+ * o conteúdo é sensível e só deve ser compartilhado com quem tem permissão
+ * de visualização.
+ */
+export const SENSITIVE_DOCUMENT_NOTICE =
+  'Documento protegido por senha — contém informações sensíveis. Compartilhar apenas com pessoas autorizadas a visualizá-lo.';
 
 export interface SeverityStyle {
   label: string;
@@ -147,6 +169,7 @@ export function formatReference(metadata: PdfMetadataField[] | undefined): strin
 export const theme = {
   colors,
   fonts,
+  fallbackFonts,
   fontSizes,
   spacing,
   limits,
@@ -155,6 +178,7 @@ export const theme = {
   truncate,
   formatReference,
   formatDate,
+  SENSITIVE_DOCUMENT_NOTICE,
 } as const;
 
 export type Theme = typeof theme;

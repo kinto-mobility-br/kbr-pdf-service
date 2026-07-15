@@ -1,6 +1,7 @@
 import SVGtoPDF from 'svg-to-pdfkit';
 import { loadSvg } from '../assets-loader.js';
 import { drawCard } from '../components/card.js';
+import { drawTextWithFallback } from '../components/text-fallback.js';
 import { getContentArea } from './page-chrome.js';
 import type { PdfMetadataField, PdfOverviewCard, PdfReportConfig } from '../types.js';
 import type { Theme } from '../theme.js';
@@ -29,16 +30,34 @@ export function renderCover(args: RenderCoverArgs): void {
   SVGtoPDF(doc, logoSvg, area.x, cursorY, { width: logoWidth, height: logoHeight });
   cursorY += logoHeight + 20;
 
+  // 1.1 Aviso de documento protegido por senha (quando aplicável)
+  if (config.openPassword) {
+    doc
+      .save()
+      .fillColor(colors.error);
+    drawTextWithFallback(
+      doc,
+      theme.SENSITIVE_DOCUMENT_NOTICE,
+      area.x,
+      cursorY,
+      fonts.bold,
+      theme.fallbackFonts.bold,
+      fontSizes.labelCaps,
+      { width: area.width, characterSpacing: 0.2 },
+    );
+    cursorY = doc.y + 14;
+    doc.restore();
+  }
+
   // 2. Kicker
   doc
     .save()
     .font(fonts.semibold)
-    .fontSize(fontSizes.kicker)
-    .fillColor(colors.kintoBrandBlue)
-    .text(config.coverKicker, area.x, cursorY, {
-      lineBreak: false,
-      characterSpacing: 1.5,
-    });
+    .fillColor(colors.kintoBrandBlue);
+  drawTextWithFallback(doc, config.coverKicker, area.x, cursorY, fonts.semibold, theme.fallbackFonts.semibold, fontSizes.kicker, {
+    lineBreak: false,
+    characterSpacing: 1.5,
+  });
   cursorY += 16;
   doc.restore();
 
@@ -46,9 +65,11 @@ export function renderCover(args: RenderCoverArgs): void {
   doc
     .save()
     .font(fonts.bold)
-    .fontSize(fontSizes.coverTitle)
-    .fillColor(colors.n900Gunmetal)
-    .text(config.coverTitle, area.x, cursorY, { width: area.width, lineGap: 2 });
+    .fillColor(colors.n900Gunmetal);
+  drawTextWithFallback(doc, config.coverTitle, area.x, cursorY, fonts.bold, theme.fallbackFonts.bold, fontSizes.coverTitle, {
+    width: area.width,
+    lineGap: 2,
+  });
   cursorY = doc.y + 12;
   doc.restore();
 
@@ -110,23 +131,20 @@ function renderMetadataRows(
     doc
       .save()
       .font(fonts.bold)
-      .fontSize(fontSizes.labelCaps)
-      .fillColor(colors.n500SlateGray)
-      .text(field.label.toUpperCase(), x, rowY, {
-        width,
-        characterSpacing: 0.6,
-        lineBreak: false,
-      });
+      .fillColor(colors.n500SlateGray);
+    drawTextWithFallback(doc, field.label.toUpperCase(), x, rowY, fonts.bold, theme.fallbackFonts.bold, fontSizes.labelCaps, {
+      width,
+      characterSpacing: 0.6,
+      lineBreak: false,
+    });
 
-    doc
-      .font(fonts.semibold)
-      .fontSize(fontSizes.cardHeading)
-      .fillColor(field.link ? colors.kintoBrandBlue : colors.n900Gunmetal)
-      .text(field.value, x, rowY + 12, {
-        width,
-        lineBreak: false,
-        ...(field.link ? { link: field.link, underline: true } : {}),
-      });
+    doc.font(fonts.semibold)
+      .fillColor(field.link ? colors.kintoBrandBlue : colors.n900Gunmetal);
+    drawTextWithFallback(doc, field.value, x, rowY + 12, fonts.semibold, theme.fallbackFonts.semibold, fontSizes.cardHeading, {
+      width,
+      lineBreak: false,
+      ...(field.link ? { link: field.link, underline: true } : {}),
+    });
     doc.restore();
   }
 
@@ -168,20 +186,19 @@ function renderSummaryCard(
   doc
     .save()
     .font(fonts.semibold)
-    .fontSize(fontSizes.cardHeading)
-    .fillColor(colors.kintoBrandBlue)
-    .text(title, x + padding, y + padding, { lineBreak: false });
+    .fillColor(colors.kintoBrandBlue);
+  drawTextWithFallback(doc, title, x + padding, y + padding, fonts.semibold, theme.fallbackFonts.semibold, fontSizes.cardHeading, {
+    lineBreak: false,
+  });
 
-  doc
-    .font(fonts.regular)
-    .fontSize(fontSize)
-    .fillColor(colors.n900Gunmetal)
-    .text(summary, x + padding, y + padding + titleHeight, {
-      width: textWidth,
-      height: textAreaHeight,
-      ellipsis: true,
-      lineGap,
-    });
+  doc.font(fonts.regular)
+    .fillColor(colors.n900Gunmetal);
+  drawTextWithFallback(doc, summary, x + padding, y + padding + titleHeight, fonts.regular, theme.fallbackFonts.regular, fontSize, {
+    width: textWidth,
+    height: textAreaHeight,
+    ellipsis: true,
+    lineGap,
+  });
   doc.restore();
 }
 

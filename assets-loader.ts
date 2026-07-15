@@ -4,7 +4,26 @@ import { fileURLToPath } from 'url';
 
 export type FontWeight = 'regular' | 'light' | 'book' | 'semibold' | 'bold';
 
+/**
+ * ATENÇÃO: a família Toyota Type não contém glifos para alguns acentos do
+ * português (confirmado: ã, ç, õ são renderizados como espaço em branco/
+ * caractere ausente). Isso é uma limitação conhecida e aceita da fonte —
+ * caso o texto em PT-BR precise de acentuação 100% correta, considere usar
+ * as fontes Inter (também disponíveis em assets/fonts/) para o corpo do texto.
+ *
+ * Por isso as fontes Inter abaixo são carregadas como FALLBACK automático
+ * (ver components/text-fallback.ts): o texto continua na Toyota Type e só
+ * troca de fonte, caractere a caractere, para os que ela não suporta.
+ */
 const FONT_FILES: Record<FontWeight, string> = {
+  regular: 'Toyota-Type.ttf',
+  light: 'Toyota-Type-Light.ttf',
+  book: 'Toyota-Type-Book.ttf',
+  semibold: 'Toyota-Type-Semibold.ttf',
+  bold: 'Toyota-Type-Bold.ttf',
+};
+
+const FALLBACK_FONT_FILES: Record<FontWeight, string> = {
   regular: 'Inter-Regular.ttf',
   light: 'Inter-Light.ttf',
   book: 'Inter-Medium.ttf',
@@ -28,6 +47,11 @@ function assetsRoot(): string {
 
 export function loadFont(weight: FontWeight): Buffer {
   return readFileSync(join(assetsRoot(), 'fonts', FONT_FILES[weight]));
+}
+
+/** Carrega a fonte Inter correspondente, usada como fallback de glifos (ver components/text-fallback.ts). */
+export function loadFallbackFont(weight: FontWeight): Buffer {
+  return readFileSync(join(assetsRoot(), 'fonts', FALLBACK_FONT_FILES[weight]));
 }
 
 export function loadSvg(name: string): string {
