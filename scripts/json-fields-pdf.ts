@@ -16,10 +16,11 @@
  *   cat dados.json | tsx scripts/json-fields-pdf.ts [opções]
  *
  * Opções:
- *   --titulo, -t <texto>   Título exibido no topo do documento (default: "Dados")
- *   --saida,  -o <path>    Caminho do PDF de saída (default: tmp/campos-<timestamp>.pdf)
- *   --senha,  -s <texto>   Senha de abertura do PDF (protege com AES-256)
- *   --help,   -h           Mostra esta ajuda
+ *   --titulo,    -t <texto>   Título exibido no topo do documento (default: "Dados")
+ *   --descricao, -d <texto>   Texto descritivo exibido antes dos campos de dados
+ *   --saida,     -o <path>    Caminho do PDF de saída (default: tmp/campos-<timestamp>.pdf)
+ *   --senha,     -s <texto>   Senha de abertura do PDF (protege com AES-256)
+ *   --help,      -h           Mostra esta ajuda
  *
  * Segurança: prefira a variável de ambiente PDF_PASSWORD a "--senha" quando
  * possível — argumentos de linha de comando podem ficar visíveis no
@@ -45,6 +46,7 @@ import {
 interface CliOptions {
   inputPath?: string;
   title: string;
+  description?: string;
   outputPath?: string;
   password?: string;
 }
@@ -67,10 +69,11 @@ Uso:
   cat dados.json | tsx scripts/json-fields-pdf.ts [opções]
 
 Opções:
-  --titulo, -t <texto>   Título do documento (default: "Dados")
-  --saida,  -o <path>    Caminho do PDF de saída (default: tmp/campos-<timestamp>.pdf)
-  --senha,  -s <texto>   Senha de abertura do PDF (AES-256). Também pode vir da env PDF_PASSWORD
-  --help,   -h           Mostra esta ajuda
+  --titulo,    -t <texto>   Título do documento (default: "Dados")
+  --descricao, -d <texto>   Texto descritivo exibido antes dos campos de dados
+  --saida,     -o <path>    Caminho do PDF de saída (default: tmp/campos-<timestamp>.pdf)
+  --senha,     -s <texto>   Senha de abertura do PDF (AES-256). Também pode vir da env PDF_PASSWORD
+  --help,      -h           Mostra esta ajuda
 `);
   process.exit(0);
 }
@@ -89,6 +92,10 @@ function parseArgs(argv: string[]): CliOptions {
       case '--titulo':
       case '-t':
         options.title = argv[++i] ?? options.title;
+        break;
+      case '--descricao':
+      case '-d':
+        options.description = argv[++i];
         break;
       case '--saida':
       case '-o':
@@ -271,6 +278,25 @@ async function main(): Promise<void> {
     theme,
   });
   y += 10;
+
+  if (options.description) {
+    doc.font(theme.fonts.regular).fontSize(10.5);
+    const requiredHeight = doc.heightOfString(options.description, { width: FIELD_WIDTH, lineGap: 2 }) + 14;
+    y = ensureSpaceOrNewPage({ doc, cursorY: y, requiredHeight, theme });
+
+    doc.fillColor(theme.colors.n700BlackCoral);
+    drawTextWithFallback(
+      doc,
+      options.description,
+      LAYOUT.MARGIN_LEFT,
+      y,
+      theme.fonts.regular,
+      theme.fallbackFonts.regular,
+      10.5,
+      { width: FIELD_WIDTH, lineGap: 2 },
+    );
+    y = doc.y + 14;
+  }
 
   if (password) {
     doc.fillColor(theme.colors.error);

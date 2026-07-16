@@ -21,3 +21,6 @@ Histórico de mudanças deste repositório. Entradas são organizadas por data
   à`, travessão `—`), trocando para Inter por trecho/palavra inteira (nunca no
   meio de uma palavra, para evitar desalinhamento de linha de base) e com
   escala de tamanho equalizada entre as fontes.
+- Opção `--descricao`/`-d` no script `json-fields-pdf.ts`: texto descritivo
+  exibido como parágrafo (com quebra de linha automática) antes dos campos de
+  dados, entre o título e o aviso de senha.
