@@ -85,6 +85,53 @@ describe('kbr-pdf-service — generatePdf', () => {
     expect(buffer.length).toBeGreaterThan(3000);
   });
 
+  it('gera PDF com uma seção de tabela', async () => {
+    const buffer = await generatePdf({
+      sections: [
+        {
+          title: 'Tentativas de emissão de NFSe',
+          descriptor: '3 tentativa(s) de emissão no período — 1 falha(s)',
+          table: {
+            columns: [
+              { key: 'id', label: 'ID Integração', width: 0.22 },
+              { key: 'numero', label: 'NFSe Nº', width: 0.14 },
+              { key: 'status', label: 'Status', width: 0.2 },
+              { key: 'motivo', label: 'Motivo' },
+            ],
+            rows: [
+              { cells: { id: 'k53qxp3/2148036', numero: '-', status: 'Falha (sem dados do cliente)', motivo: 'Sem CPF ou endereço estruturado' }, severity: 'high' },
+              { cells: { id: 'lr1po05/2146491', numero: '1234', status: 'Emitida com sucesso', motivo: '-' } },
+              { cells: { id: 'k53qg6j/2146852', numero: '-', status: 'Falha (dados inválidos)', motivo: 'Campos faltantes: NFSeTomadorEnderecoNumero' }, severity: 'high' },
+            ],
+          },
+        },
+      ],
+    });
+    expect(buffer.subarray(0, PDF_PREFIX.length).toString('utf-8')).toBe(PDF_PREFIX);
+    expect(buffer.length).toBeGreaterThan(3000);
+  });
+
+  it('gera PDF com tabela grande o suficiente pra quebrar página', async () => {
+    const buffer = await generatePdf({
+      sections: [
+        {
+          title: 'Tentativas de emissão de NFSe',
+          table: {
+            columns: [
+              { key: 'id', label: 'ID Integração', width: 0.3 },
+              { key: 'status', label: 'Status' },
+            ],
+            rows: Array.from({ length: 120 }, (_, i) => ({
+              cells: { id: `id-${i}/${1000 + i}`, status: i % 5 === 0 ? 'Falha (exceção)' : 'Emitida com sucesso' },
+              severity: i % 5 === 0 ? 'high' : undefined,
+            })),
+          },
+        },
+      ],
+    });
+    expect(buffer.subarray(0, PDF_PREFIX.length).toString('utf-8')).toBe(PDF_PREFIX);
+  });
+
   it('gera PDF com múltiplas seções', async () => {
     const buffer = await generatePdf({
       summary: 'Multi-section report.',

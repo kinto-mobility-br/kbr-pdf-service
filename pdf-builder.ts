@@ -2,6 +2,7 @@ import PDFDocument from 'pdfkit';
 import { loadFont, loadFallbackFont } from './assets-loader.js';
 import { renderCover } from './sections/cover.js';
 import { renderSection } from './sections/section-renderer.js';
+import { renderTableSection } from './sections/table-renderer.js';
 import { renderPageHeader, renderPageFooter } from './sections/page-chrome.js';
 import { theme as defaultTheme } from './theme.js';
 import type { Theme } from './theme.js';
@@ -79,17 +80,30 @@ export async function buildPdf(
   const sections = input.sections ?? [];
   for (let i = 0; i < sections.length; i++) {
     const section = sections[i];
-    if (!section || section.items.length === 0) continue;
+    const hasItems = (section?.items?.length ?? 0) > 0;
+    const hasTable = (section?.table?.rows.length ?? 0) > 0;
+    if (!section || (!hasItems && !hasTable)) continue;
     doc.addPage();
     renderPageHeader({ doc, headerTitle: config.headerTitle, reference: config.reference, theme });
-    renderSection({
-      doc,
-      number: i + 1,
-      title: section.title,
-      descriptor: section.descriptor,
-      items: section.items,
-      theme,
-    });
+    if (hasTable && section.table) {
+      renderTableSection({
+        doc,
+        number: i + 1,
+        title: section.title,
+        descriptor: section.descriptor,
+        table: section.table,
+        theme,
+      });
+    } else {
+      renderSection({
+        doc,
+        number: i + 1,
+        title: section.title,
+        descriptor: section.descriptor,
+        items: section.items ?? [],
+        theme,
+      });
+    }
   }
 
   // Footer com paginação

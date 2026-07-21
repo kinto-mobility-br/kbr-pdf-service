@@ -16,6 +16,9 @@ export type {
   PdfReportConfig,
   PdfSection,
   PdfSectionItem,
+  PdfTable,
+  PdfTableColumn,
+  PdfTableRow,
   PdfMetadataField,
   PdfOverviewCard,
 } from './types.js';
@@ -76,7 +79,7 @@ export async function generatePdf(input: PdfReportInput): Promise<Buffer> {
   }
 
   const hasSummary = typeof input.summary === 'string' && input.summary.trim().length > 0;
-  const hasSections = (input.sections ?? []).some((s) => s.items.length > 0);
+  const hasSections = (input.sections ?? []).some((s) => (s.items?.length ?? 0) > 0 || (s.table?.rows.length ?? 0) > 0);
 
   if (!hasSummary && !hasSections) {
     throw new Error('PdfReportInput não contém conteúdo para renderizar (summary ou sections)');

@@ -3,6 +3,26 @@
 Histórico de mudanças deste repositório. Entradas são organizadas por data
 (mais recente no topo).
 
+## 2026-07-21 — Seção de tabela (`PdfTable`) como alternativa aos cards
+
+- Novo tipo de seção `table` em `PdfSection` (`PdfTable`/`PdfTableColumn`/
+  `PdfTableRow` em `types.ts`, renderer novo em
+  `sections/table-renderer.ts`, plugado no `pdf-builder.ts`): permite
+  exibir os registros de uma seção como uma tabela compacta (cabeçalho +
+  várias linhas por página) em vez de um card por item — motivado pelo
+  `kbr-nfse-invoices`, cujo resumo diário de NFSe virava dezenas de páginas
+  com 1 card por tentativa (ex.: 119 tentativas ≈ 25 páginas com cards,
+  ~13 páginas com tabela).
+- `items` virou opcional em `PdfSection` (retrocompatível — seções
+  existentes continuam funcionando sem alteração). `severity` de
+  `PdfTableRow` pinta o texto da linha (vermelho para `high`, laranja para
+  `medium`), já que não há espaço pra um badge por linha como nos cards.
+- Colunas suportam largura relativa (`width`, fração de 0 a 1); colunas sem
+  `width` dividem igualmente o espaço restante.
+- Novos testes em `__tests__/generate-pdf.test.ts` (seção de tabela simples
+  e tabela com 120 linhas pra validar quebra de página).
+- Validado: `tsc --noEmit`, `vitest run` (45 testes), `npm run build`.
+
 ## 2026-07-15 — Script de PDF a partir de JSON, senha de abertura e fonte Toyota Type
 
 - Novo script `scripts/json-fields-pdf.ts` (`npm run json-to-pdf`): gera um PDF a
