@@ -56,18 +56,9 @@ export { drawTextWithFallback, drawSegmentedText } from './components/text-fallb
 export type { FallbackTextPart } from './components/text-fallback.js';
 export { loadFont, loadFallbackFont, loadSvg } from './assets-loader.js';
 
-// Processing — image compression, PDF rasterization
-export {
-  ImageCompressionService,
-  imageCompressionService,
-  PdfAttachmentService,
-  pdfAttachmentService,
-  rasterizePdfToJpegs,
-} from './processing/index.js';
-export type {
-  CompressionOptions,
-  CompressionResult,
-} from './processing/index.js';
+// `ImageCompressionService`/`PdfAttachmentService`/`rasterizePdfToJpegs` vivem só em
+// './processing/index.js' (import '@kbr/pdf-service/processing') — mantém `sharp`/`mupdf`
+// fora do grafo de módulos de quem só precisa de `generatePdf`.
 
 /**
  * Gera um PDF com branding KINTO a partir de um input genérico.

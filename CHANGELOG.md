@@ -3,6 +3,30 @@
 Histórico de mudanças deste repositório. Entradas são organizadas por data
 (mais recente no topo).
 
+## 2026-08-27 — Entry point raiz deixa de reexportar `processing/*` (isola `sharp`/`mupdf`)
+
+- `index.ts`: removidos os reexports de `ImageCompressionService`/
+  `imageCompressionService`/`PdfAttachmentService`/`pdfAttachmentService`/
+  `rasterizePdfToJpegs`/`CompressionOptions`/`CompressionResult` do entry point
+  raiz (`.`). Motivo: `sharp` (dependência nativa por plataforma, ~15 pacotes
+  `@img/sharp-*` distintos por SO/arquitetura) era carregado transitivamente
+  por qualquer consumidor de `generatePdf`, mesmo sem uso de compressão de
+  imagem/rasterização — risco concreto para consumidores serverless (ex.: AWS
+  Lambda) que só precisam do núcleo de geração de PDF e não podem garantir que
+  o binário nativo instalado bata com o runtime de destino.
+- Esses símbolos continuam disponíveis, sem mudança de contrato, via o subpath
+  já existente `@kbr/pdf-service/processing`. `package.json` não foi alterado
+  (o subpath já estava declarado em `exports`).
+- Novo teste `__tests__/entry-points.test.ts` cobrindo a separação (raiz sem os
+  símbolos de `processing`, subpath preservado, ausência de `sharp`/`mupdf` em
+  `index.ts`).
+- Validado: `vitest run` (49 testes, sem regressão), `tsc --noEmit`, `npm run
+  build` (bundle raiz sem referência a `processing`/`sharp`/`mupdf`).
+- Motivada pela demanda `relatorio-pdf-kbr-pdf-service` do
+  `kbr-domain-dealers-commissions` (nova Lambda que passa a consumir
+  `@kbr/pdf-service` como dependência git e não pode arrastar um binário
+  nativo incompatível com o runtime Lambda).
+
 ## 2026-07-21 — Seção de tabela (`PdfTable`) como alternativa aos cards
 
 - Novo tipo de seção `table` em `PdfSection` (`PdfTable`/`PdfTableColumn`/
