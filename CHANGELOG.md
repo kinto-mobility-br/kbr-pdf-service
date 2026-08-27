@@ -27,6 +27,19 @@ Histórico de mudanças deste repositório. Entradas são organizadas por data
   `@kbr/pdf-service` como dependência git e não pode arrastar um binário
   nativo incompatível com o runtime Lambda).
 
+## 2026-08-27 — Remove senha hardcoded de script local e apaga arquivo com credencial de exemplo
+
+- `scripts/kinto-api-auth-pdf.ts`: `openPassword` hardcoded (`'k1nt02zfl33t'`)
+  substituído por `process.env.PDF_PASSWORD` (mesma convenção já usada em
+  `scripts/json-fields-pdf.ts`) — script nunca havia sido versionado
+  (`git status` mostrava `??`), mas evita introduzir a senha no histórico ao
+  ser adicionado agora.
+- Removido `tmp/exemplo.json` (não versionado, já coberto por `.gitignore`):
+  continha um `secret`/`token_url` de aparência real apontando para um
+  domínio `prod` do Cognito — achado ao avaliar se este repositório poderia
+  se tornar público para contornar um bloqueio de acesso do GitHub Actions em
+  `kbr-domain-dealers-commissions`.
+
 ## 2026-07-21 — Seção de tabela (`PdfTable`) como alternativa aos cards
 
 - Novo tipo de seção `table` em `PdfSection` (`PdfTable`/`PdfTableColumn`/
