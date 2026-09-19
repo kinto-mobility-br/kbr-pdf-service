@@ -3,6 +3,31 @@
 Histórico de mudanças deste repositório. Entradas são organizadas por data
 (mais recente no topo).
 
+## 2026-09-19 — Card de item ganha `rows` (linhas de duas colunas) e `suggestionLabel` customizável
+
+- `types.ts`: novo `PdfItemRow { label: string; value: string }`; `PdfSectionItem`
+  ganha `rows?: PdfItemRow[]` (renderizado após `description`, antes do bloco
+  de `suggestion`) e `suggestionLabel?: string` (rótulo do bloco destacado,
+  default `'SUGGESTION'` quando ausente). Extensão aditiva — nenhum campo
+  existente muda de tipo/obrigatoriedade.
+- `sections/section-renderer.ts`: soma a altura de cada `PdfItemRow` na medição
+  do card (entra no cálculo passado a `ensureSpaceOrNewPage`, então um card com
+  `rows` grande nunca é cortado entre páginas); desenha cada linha com `label`
+  à esquerda e `value` alinhado à direita, em colunas sem overlap mesmo com
+  quebra de linha do `value`; troca o literal fixo `'SUGGESTION'` por
+  `item.suggestionLabel ?? 'SUGGESTION'`.
+- `theme.ts`: novo `spacing.itemRowGap` (espaçamento vertical entre rows).
+- Novo `__tests__/section-item-rows.test.ts` (6 testes) com oráculo forte via
+  extração de texto real do PDF gerado (`mupdf`, novo helper
+  `__tests__/pdf-text.ts`), cobrindo: regressão sem os campos novos, N rows
+  renderizadas com label/value, card com rows grande não cortado entre
+  páginas, `suggestionLabel` customizado, regressão do rótulo default, e
+  quebra de linha de `value` longo sem sobrepor `label`.
+- Validado: `vitest run` (55 testes, sem regressão), `tsc --noEmit` limpo.
+- Motivada pela demanda `card-linhas-e-rotulo-customizavel`, pré-requisito
+  aditivo para os cards de comissão por invoice do
+  `kbr-domain-dealers-commissions`.
+
 ## 2026-08-27 — Entry point raiz deixa de reexportar `processing/*` (isola `sharp`/`mupdf`)
 
 - `index.ts`: removidos os reexports de `ImageCompressionService`/
