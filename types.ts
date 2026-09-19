@@ -9,11 +9,21 @@ export interface PdfMetadataField {
   link?: string;
 }
 
+/** Linha de duas colunas (rótulo à esquerda, valor alinhado à direita) dentro de um card de item. */
+export interface PdfItemRow {
+  label: string;
+  value: string;
+}
+
 /** Item genérico de uma seção do relatório. */
 export interface PdfSectionItem {
   title: string;
   description: string;
+  /** Lista de linhas rótulo/valor (ex.: descontos de um invoice), renderizadas após `description`. */
+  rows?: PdfItemRow[];
   suggestion?: string;
+  /** Rótulo do bloco destacado de `suggestion` (default: "SUGGESTION" quando ausente). */
+  suggestionLabel?: string;
   file?: string;
   line?: number;
   severity?: 'high' | 'medium' | 'low' | string;

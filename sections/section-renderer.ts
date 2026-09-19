@@ -3,7 +3,7 @@ import { drawFilePathBadge, drawSeverityBadge } from '../components/badge.js';
 import { drawSectionTitle } from '../components/section-title.js';
 import { drawTextWithFallback } from '../components/text-fallback.js';
 import { getContentArea } from './page-chrome.js';
-import type { PdfSectionItem } from '../types.js';
+import type { PdfItemRow, PdfSectionItem } from '../types.js';
 import type { Theme } from '../theme.js';
 
 interface RenderSectionArgs {
@@ -60,6 +60,11 @@ export function renderSection(args: RenderSectionArgs): void {
       ? measureTextHeight(doc, description, fonts.regular, fontSizes.body, textWidth, 2) + 8
       : 0;
 
+    const rowLayout = computeRowLayout(textWidth);
+    const rowsHeight = item.rows?.length
+      ? item.rows.reduce((sum, row) => sum + measureRowHeight(doc, row, fonts, fontSizes, rowLayout) + spacing.itemRowGap, 0) + 4
+      : 0;
+
     let suggestionBlockHeight = 0;
     if (suggestion) {
       const suggestionTextWidth = textWidth - 12;
@@ -68,7 +73,7 @@ export function renderSection(args: RenderSectionArgs): void {
     }
 
     const cardHeight =
-      padding + badgeRow + titleHeight + filePathHeight + descriptionHeight + suggestionBlockHeight + padding;
+      padding + badgeRow + titleHeight + filePathHeight + descriptionHeight + rowsHeight + suggestionBlockHeight + padding;
 
     cursorY = ensureSpaceOrNewPage(doc, theme, cursorY, cardHeight);
 
@@ -114,19 +119,47 @@ export function renderSection(args: RenderSectionArgs): void {
       doc.restore();
     }
 
+    if (item.rows?.length) {
+      for (const row of item.rows) {
+        const rowHeight = measureRowHeight(doc, row, fonts, fontSizes, rowLayout);
+
+        doc
+          .save()
+          .font(fonts.regular)
+          .fillColor(colors.n800Charcoal)
+          .text(row.label, area.x + padding, innerY, { width: rowLayout.labelWidth, lineGap: 2 })
+          .restore();
+
+        doc
+          .save()
+          .font(fonts.regular)
+          .fillColor(colors.n800Charcoal)
+          .text(row.value, area.x + padding + rowLayout.valueX, innerY, {
+            width: rowLayout.valueWidth,
+            align: 'right',
+            lineGap: 2,
+          })
+          .restore();
+
+        innerY += rowHeight + spacing.itemRowGap;
+      }
+      innerY += 4;
+    }
+
     if (suggestion) {
       const blockX = area.x + padding;
       const blockY = innerY;
       const barWidth = 2;
       const barColor = colors.lightBlue;
       const innerOffset = 12;
+      const suggestionLabel = item.suggestionLabel ?? 'SUGGESTION';
 
       doc
         .save()
         .font(fonts.bold)
         .fontSize(fontSizes.labelCaps)
         .fillColor(colors.kintoBrandBlue)
-        .text('SUGGESTION', blockX + innerOffset, blockY, {
+        .text(suggestionLabel, blockX + innerOffset, blockY, {
           characterSpacing: 0.6,
           lineBreak: false,
         });
@@ -196,4 +229,31 @@ function ensureSpaceOrNewPage(
     return getContentArea(doc, theme).y + 8;
   }
   return cursorY;
+}
+
+interface RowLayout {
+  labelWidth: number;
+  valueX: number;
+  valueWidth: number;
+}
+
+/** Coluna esquerda (label) e direita (value) de um `PdfItemRow`, sem overlap mesmo com quebra de linha. */
+function computeRowLayout(textWidth: number): RowLayout {
+  const gap = 12;
+  const labelWidth = Math.floor(textWidth * 0.55);
+  const valueX = labelWidth + gap;
+  const valueWidth = textWidth - valueX;
+  return { labelWidth, valueX, valueWidth };
+}
+
+function measureRowHeight(
+  doc: PDFKit.PDFDocument,
+  row: PdfItemRow,
+  fonts: Theme['fonts'],
+  fontSizes: Theme['fontSizes'],
+  layout: RowLayout,
+): number {
+  const labelHeight = measureTextHeight(doc, row.label, fonts.regular, fontSizes.body, layout.labelWidth, 2);
+  const valueHeight = measureTextHeight(doc, row.value, fonts.regular, fontSizes.body, layout.valueWidth, 2);
+  return Math.max(labelHeight, valueHeight);
 }
