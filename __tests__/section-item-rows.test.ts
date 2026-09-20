@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { generatePdf } from '../index.js';
 import { extractPagesText } from './pdf-text.js';
+import { searchTextBoxes, countPixelsOfColor } from './pdf-geometry.js';
 
 const PDF_PREFIX = '%PDF-1.';
 
@@ -134,4 +135,93 @@ describe('kbr-pdf-service — PdfSectionItem.rows e suggestionLabel', () => {
     expect(normalizedText).toContain('Desconto');
     expect(normalizedText).toContain('forcar quebra de linha');
   });
+
+  it('VER001 (regressão): row sem description continua com 2 colunas (label esquerda, value direita)', async () => {
+    const buffer = await generatePdf({
+      sections: [
+        {
+          title: 'Lancamentos',
+          items: [
+            {
+              title: 'Invoice #123',
+              rows: [{ label: 'Base liquida', value: 'R$ 500,00' }],
+            } as never,
+          ],
+        },
+      ],
+    });
+    const label = searchTextBoxes(buffer, 'Base liquida')[0];
+    const value = searchTextBoxes(buffer, 'R$ 500,00')[0];
+    expect(label.x1).toBeLessThan(value.x0);
+  });
+
+  it('VER002/VER003: row com description renderiza em 3 colunas sem overlap (label < description < value)', async () => {
+    const buffer = await generatePdf({
+      sections: [
+        {
+          title: 'Lancamentos',
+          items: [
+            {
+              title: 'Invoice #123',
+              rows: [
+                { label: 'Deposito', description: 'Fatura de deposito #2130968', value: 'R$ 150,00' },
+                { label: 'Veiculo Kinto', value: 'Sim' },
+              ],
+            } as never,
+          ],
+        },
+      ],
+    });
+    const allText = extractPagesText(buffer).join('\n');
+    expect(allText).toContain('Deposito');
+    expect(allText).toContain('Fatura de deposito #2130968');
+    expect(allText).toContain('R$ 150,00');
+    expect(allText).toContain('Veiculo Kinto');
+    expect(allText).toContain('Sim');
+
+    const label = searchTextBoxes(buffer, 'Deposito')[0];
+    const description = searchTextBoxes(buffer, 'Fatura de deposito #2130968')[0];
+    const value = searchTextBoxes(buffer, 'R$ 150,00')[0];
+    expect(label.x1).toBeLessThan(description.x0);
+    expect(description.x1).toBeLessThan(value.x0);
+  });
+
+  it('VER004: linha com dividerBefore desenha 1 traço a mais que uma sem a flag', async () => {
+    const withoutDivider = await generatePdf({
+      sections: [
+        {
+          title: 'Lancamentos',
+          items: [
+            {
+              title: 'Invoice #123',
+              rows: [
+                { label: 'Percentual aplicado', value: '10%' },
+                { label: 'Comissao', value: 'R$ 50,00' },
+              ],
+            } as never,
+          ],
+        },
+      ],
+    });
+    const withDivider = await generatePdf({
+      sections: [
+        {
+          title: 'Lancamentos',
+          items: [
+            {
+              title: 'Invoice #123',
+              rows: [
+                { label: 'Percentual aplicado', value: '10%' },
+                { label: 'Comissao', value: 'R$ 50,00', dividerBefore: true },
+              ],
+            } as never,
+          ],
+        },
+      ],
+    });
+    const pixelsWithout = countPixelsOfColor(withoutDivider, '#D3D9DD', 1);
+    const pixelsWith = countPixelsOfColor(withDivider, '#D3D9DD', 1);
+    expect(pixelsWith).toBeGreaterThan(pixelsWithout);
+  });
 });
+

@@ -3,6 +3,35 @@
 Histórico de mudanças deste repositório. Entradas são organizadas por data
 (mais recente no topo).
 
+## 2026-09-20 — 3ª coluna (`description`) e divisor (`dividerBefore`) em `PdfItemRow`, orientação landscape
+
+- `types.ts`: `PdfItemRow` ganha `description?: string` (coluna do meio,
+  opcional — presente vira 3 colunas) e `dividerBefore?: boolean` (traço
+  horizontal acima da linha); `PdfReportConfig` ganha
+  `orientation?: 'portrait' | 'landscape'` (default `'portrait'`). Extensão
+  aditiva — nenhum campo existente muda de tipo/obrigatoriedade.
+- `sections/section-renderer.ts`: `computeRowLayout` passa a decidir 2 ou 3
+  colunas **por linha** (permite misturar linhas com e sem `description` no
+  mesmo card); `measureRowHeight` soma a altura do divisor quando
+  `dividerBefore`; o laço de desenho passa a desenhar o traço (cor
+  `n100LightGray`) antes da linha e a coluna de `description` (cor
+  `n600DarkElectricBlue`) quando presente.
+- `pdf-builder.ts`: `layout: config.orientation` repassado na criação do
+  `PDFDocument` **e** em cada `doc.addPage()` (capa e por seção) — o pdfkit
+  não herda `layout` automaticamente entre páginas.
+- Novo `__tests__/pdf-geometry.ts` com helpers de oráculo forte via PDF real:
+  `searchTextBoxes` (posição de texto), `extractPageSizes` (orientação),
+  `countPixelsOfColor` (rasterização real da página para detectar o traço
+  do divisor).
+- `__tests__/section-item-rows.test.ts` (+4 testes) e
+  `__tests__/generate-pdf.test.ts` (+3 testes).
+- Validado: `vitest run` (61 testes, sem regressão), `tsc --noEmit` limpo,
+  `npm run build` sem erros.
+- Motivada pela demanda `card-item-descricao-divisor-orientacao-paisagem`,
+  pré-requisito bloqueante para os cards de comissão do
+  `kbr-domain-dealers-commissions` (relatório em orientação paisagem com
+  descrição de itens e separador visual antes do total).
+
 ## 2026-09-19 — Card de item ganha `rows` (linhas de duas colunas) e `suggestionLabel` customizável
 
 - `types.ts`: novo `PdfItemRow { label: string; value: string }`; `PdfSectionItem`

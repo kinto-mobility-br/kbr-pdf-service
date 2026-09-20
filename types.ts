@@ -9,10 +9,14 @@ export interface PdfMetadataField {
   link?: string;
 }
 
-/** Linha de duas colunas (rótulo à esquerda, valor alinhado à direita) dentro de um card de item. */
+/** Linha de 2 ou 3 colunas (rótulo, descrição opcional, valor alinhado à direita) dentro de um card de item. */
 export interface PdfItemRow {
   label: string;
   value: string;
+  /** Coluna do meio, opcional — presente vira 3 colunas, ausente mantém 2 (label/value). */
+  description?: string;
+  /** Desenha um traço horizontal acima desta linha (separador entre grupos de linhas). */
+  dividerBefore?: boolean;
 }
 
 /** Item genérico de uma seção do relatório. */
@@ -93,6 +97,8 @@ export interface PdfReportConfig {
    * qualquer leitor. Deixe indefinido para gerar um PDF sem proteção.
    */
   openPassword?: string;
+  /** Orientação de página do documento inteiro (default: 'portrait'). */
+  orientation?: 'portrait' | 'landscape';
 }
 
 /** Input completo para gerar um relatório PDF. */

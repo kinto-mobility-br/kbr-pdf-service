@@ -17,6 +17,7 @@ const DEFAULT_CONFIG: Required<PdfReportConfig> = {
   coverTitle: 'Report',
   footerText: '© KINTO MOBILITY · DOCUMENTO CONFIDENCIAL',
   openPassword: '',
+  orientation: 'portrait',
 };
 
 export async function buildPdf(
@@ -36,6 +37,7 @@ export async function buildPdf(
 
   const doc = new PDFDocument({
     size: 'A4',
+    layout: config.orientation,
     margins: {
       top: spacing.pageMarginTop,
       bottom: spacing.pageMarginBottom,
@@ -55,7 +57,7 @@ export async function buildPdf(
 
   registerFonts(doc, theme);
   doc.font(theme.fonts.regular);
-  doc.addPage();
+  doc.addPage({ layout: config.orientation });
 
   const chunks: Buffer[] = [];
   const completion = new Promise<Buffer>((resolve, reject) => {
@@ -83,7 +85,7 @@ export async function buildPdf(
     const hasItems = (section?.items?.length ?? 0) > 0;
     const hasTable = (section?.table?.rows.length ?? 0) > 0;
     if (!section || (!hasItems && !hasTable)) continue;
-    doc.addPage();
+    doc.addPage({ layout: config.orientation });
     renderPageHeader({ doc, headerTitle: config.headerTitle, reference: config.reference, theme });
     if (hasTable && section.table) {
       renderTableSection({
