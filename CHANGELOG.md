@@ -5,6 +5,10 @@ Histórico de mudanças deste repositório. Entradas são organizadas por data
 
 ## 2026-09-20 — Selo de severidade como prefixo do título, ícone no título, overrides de tema (densidade) e correção de tamanho de página
 
+- `sections/section-renderer.ts`: **inverte os lados** do ícone do título
+  (`titleIcon`) e do selo de severidade — o ícone passa a ser o prefixo à
+  esquerda do título, e o selo de severidade passa a ficar alinhado à
+  direita (antes era o oposto).
 - `sections/section-renderer.ts`: o selo de severidade (`HIGH`/`MEDIUM`/`LOW`)
   passa a ser desenhado como **prefixo inline** do título do card (mesma
   linha, alinhado verticalmente), em vez de ocupar uma linha própria acima —

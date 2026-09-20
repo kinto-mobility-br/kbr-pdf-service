@@ -95,15 +95,15 @@ export function renderSection(args: RenderSectionArgs): void {
     const titleTopY = cursorY + padding;
     let titleX = area.x + padding;
 
-    if (badgeBox) {
-      drawSeverityBadge({
-        doc,
-        severity: item.severity,
-        x: titleX,
-        y: titleTopY + Math.max(0, (titleHeight - badgeBox.height) / 2),
-        theme,
+    // Icone (ex.: KINTO_SQ_BLUE) fica a esquerda, como prefixo do titulo; o selo de severidade
+    // fica a direita, alinhado ao fim da linha.
+    if (item.titleIcon) {
+      const iconSvg = loadSvg(item.titleIcon);
+      SVGtoPDF(doc, iconSvg, titleX, titleTopY, {
+        width: TITLE_ICON_SIZE,
+        height: TITLE_ICON_SIZE,
       });
-      titleX += badgePrefixWidth;
+      titleX += TITLE_ICON_SIZE + TITLE_ICON_GAP;
     }
 
     doc
@@ -115,11 +115,13 @@ export function renderSection(args: RenderSectionArgs): void {
     });
     doc.restore();
 
-    if (item.titleIcon) {
-      const iconSvg = loadSvg(item.titleIcon);
-      SVGtoPDF(doc, iconSvg, area.x + padding + textWidth - TITLE_ICON_SIZE, titleTopY, {
-        width: TITLE_ICON_SIZE,
-        height: TITLE_ICON_SIZE,
+    if (badgeBox) {
+      drawSeverityBadge({
+        doc,
+        severity: item.severity,
+        x: area.x + padding + textWidth - badgeBox.width,
+        y: titleTopY + Math.max(0, (titleHeight - badgeBox.height) / 2),
+        theme,
       });
     }
 
