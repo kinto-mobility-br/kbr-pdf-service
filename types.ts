@@ -17,6 +17,8 @@ export interface PdfItemRow {
   description?: string;
   /** Desenha um traço horizontal acima desta linha (separador entre grupos de linhas). */
   dividerBefore?: boolean;
+  /** Desenha label e value em negrito (ex.: linha de total/destaque de um bloco). */
+  bold?: boolean;
 }
 
 /** Item genérico de uma seção do relatório. */

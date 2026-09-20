@@ -173,7 +173,7 @@ export function renderSection(args: RenderSectionArgs): void {
         }
 
         doc.save().fillColor(colors.n800Charcoal);
-        drawTextWithFallback(doc, row.label, area.x + padding, rowY, fonts.regular, theme.fallbackFonts.regular, fontSizes.body, {
+        drawTextWithFallback(doc, row.label, area.x + padding, rowY, row.bold ? fonts.bold : fonts.regular, row.bold ? theme.fallbackFonts.bold : theme.fallbackFonts.regular, fontSizes.body, {
           width: rowLayout.labelWidth,
           lineGap: 2,
         });
@@ -197,7 +197,7 @@ export function renderSection(args: RenderSectionArgs): void {
         }
 
         doc.save().fillColor(colors.n800Charcoal);
-        drawTextWithFallback(doc, row.value, area.x + padding + rowLayout.valueX, rowY, fonts.regular, theme.fallbackFonts.regular, fontSizes.body, {
+        drawTextWithFallback(doc, row.value, area.x + padding + rowLayout.valueX, rowY, row.bold ? fonts.bold : fonts.regular, row.bold ? theme.fallbackFonts.bold : theme.fallbackFonts.regular, fontSizes.body, {
           width: rowLayout.valueWidth,
           align: 'right',
           lineGap: 2,
@@ -328,11 +328,12 @@ function measureRowHeight(
   fontSizes: Theme['fontSizes'],
   layout: RowLayout,
 ): number {
-  const labelHeight = measureTextHeight(doc, row.label, fonts.regular, fontSizes.body, layout.labelWidth, 2);
+  const font = row.bold ? fonts.bold : fonts.regular;
+  const labelHeight = measureTextHeight(doc, row.label, font, fontSizes.body, layout.labelWidth, 2);
   const descriptionHeight = row.description
     ? measureTextHeight(doc, row.description, fonts.regular, fontSizes.body, layout.descriptionWidth!, 2)
     : 0;
-  const valueHeight = measureTextHeight(doc, row.value, fonts.regular, fontSizes.body, layout.valueWidth, 2);
+  const valueHeight = measureTextHeight(doc, row.value, font, fontSizes.body, layout.valueWidth, 2);
   const contentHeight = Math.max(labelHeight, descriptionHeight, valueHeight);
   return row.dividerBefore ? contentHeight + DIVIDER_HEIGHT + DIVIDER_GAP * 2 : contentHeight;
 }

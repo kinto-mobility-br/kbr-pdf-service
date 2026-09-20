@@ -5,6 +5,10 @@ Histórico de mudanças deste repositório. Entradas são organizadas por data
 
 ## 2026-09-20 — Selo de severidade como prefixo do título, ícone no título, overrides de tema (densidade) e correção de tamanho de página
 
+- `types.ts`/`sections/section-renderer.ts`: novo `PdfItemRow.bold?: boolean`
+  — desenha label e value da linha em negrito (fonte `bold`, com fallback
+  `bold` correspondente), útil para destacar a linha de total/resultado de
+  um bloco de composição dentro de um card.
 - `components/text-fallback.ts`: nova `drawTextInFallbackFont()` — sempre
   desenha na fonte de fallback (Inter, tamanho equalizado), sem checar
   glifos. `sections/section-renderer.ts` passa a usar essa função para

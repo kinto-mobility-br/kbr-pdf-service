@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { generatePdf } from '../index.js';
-import { extractPagesText } from './pdf-text.js';
+import { extractPagesText, findLineFontWeight } from './pdf-text.js';
 import { searchTextBoxes, countPixelsOfColor } from './pdf-geometry.js';
 
 const PDF_PREFIX = '%PDF-1.';
@@ -222,6 +222,28 @@ describe('kbr-pdf-service — PdfSectionItem.rows e suggestionLabel', () => {
     const pixelsWithout = countPixelsOfColor(withoutDivider, '#D3D9DD', 1);
     const pixelsWith = countPixelsOfColor(withDivider, '#D3D9DD', 1);
     expect(pixelsWith).toBeGreaterThan(pixelsWithout);
+  });
+
+  it('VER015: linha com bold desenha label e value em negrito; linha sem bold fica normal', async () => {
+    const buffer = await generatePdf({
+      sections: [
+        {
+          title: 'Lancamentos',
+          items: [
+            {
+              title: 'Invoice #123',
+              rows: [
+                { label: 'Percentual aplicado', value: '10%' },
+                { label: 'Comissao base', value: 'R$ 100,00', bold: true },
+              ],
+            } as never,
+          ],
+        },
+      ],
+    });
+    expect(findLineFontWeight(buffer, 'Percentual aplicado')).toBe('normal');
+    expect(findLineFontWeight(buffer, 'Comissao base')).toBe('bold');
+    expect(findLineFontWeight(buffer, 'R$ 100,00')).toBe('bold');
   });
 });
 
