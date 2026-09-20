@@ -60,9 +60,11 @@ export function renderSection(args: RenderSectionArgs): void {
       ? measureTextHeight(doc, description, fonts.regular, fontSizes.body, textWidth, 2) + 8
       : 0;
 
-    const rowLayout = computeRowLayout(textWidth);
     const rowsHeight = item.rows?.length
-      ? item.rows.reduce((sum, row) => sum + measureRowHeight(doc, row, fonts, fontSizes, rowLayout) + spacing.itemRowGap, 0) + 4
+      ? item.rows.reduce((sum, row) => {
+          const rowLayout = computeRowLayout(textWidth, Boolean(row.description));
+          return sum + measureRowHeight(doc, row, fonts, fontSizes, rowLayout) + spacing.itemRowGap;
+        }, 0) + 4
       : 0;
 
     let suggestionBlockHeight = 0;
@@ -121,20 +123,46 @@ export function renderSection(args: RenderSectionArgs): void {
 
     if (item.rows?.length) {
       for (const row of item.rows) {
+        const rowLayout = computeRowLayout(textWidth, Boolean(row.description));
         const rowHeight = measureRowHeight(doc, row, fonts, fontSizes, rowLayout);
 
-        doc
-          .save()
-          .font(fonts.regular)
-          .fillColor(colors.n800Charcoal)
-          .text(row.label, area.x + padding, innerY, { width: rowLayout.labelWidth, lineGap: 2 })
-          .restore();
+        let rowY = innerY;
+        if (row.dividerBefore) {
+          doc
+            .save()
+            .moveTo(area.x + padding, rowY + DIVIDER_GAP)
+            .lineTo(area.x + padding + textWidth, rowY + DIVIDER_GAP)
+            .lineWidth(DIVIDER_HEIGHT)
+            .strokeColor(colors.n100LightGray)
+            .stroke()
+            .restore();
+          rowY += DIVIDER_GAP * 2 + DIVIDER_HEIGHT;
+        }
 
         doc
           .save()
           .font(fonts.regular)
           .fillColor(colors.n800Charcoal)
-          .text(row.value, area.x + padding + rowLayout.valueX, innerY, {
+          .text(row.label, area.x + padding, rowY, { width: rowLayout.labelWidth, lineGap: 2 })
+          .restore();
+
+        if (row.description) {
+          doc
+            .save()
+            .font(fonts.regular)
+            .fillColor(colors.n600DarkElectricBlue)
+            .text(row.description, area.x + padding + rowLayout.descriptionX!, rowY, {
+              width: rowLayout.descriptionWidth,
+              lineGap: 2,
+            })
+            .restore();
+        }
+
+        doc
+          .save()
+          .font(fonts.regular)
+          .fillColor(colors.n800Charcoal)
+          .text(row.value, area.x + padding + rowLayout.valueX, rowY, {
             width: rowLayout.valueWidth,
             align: 'right',
             lineGap: 2,
@@ -233,17 +261,29 @@ function ensureSpaceOrNewPage(
 
 interface RowLayout {
   labelWidth: number;
+  descriptionX?: number;
+  descriptionWidth?: number;
   valueX: number;
   valueWidth: number;
 }
 
-/** Coluna esquerda (label) e direita (value) de um `PdfItemRow`, sem overlap mesmo com quebra de linha. */
-function computeRowLayout(textWidth: number): RowLayout {
+const DIVIDER_HEIGHT = 1;
+const DIVIDER_GAP = 6;
+
+/** 2 colunas (label/value) quando a linha nao tem description; 3 quando tem (decidido por linha,
+ * nao por card — permite misturar linhas 2 e 3 colunas no mesmo card). */
+function computeRowLayout(textWidth: number, hasDescription: boolean): RowLayout {
   const gap = 12;
-  const labelWidth = Math.floor(textWidth * 0.55);
-  const valueX = labelWidth + gap;
-  const valueWidth = textWidth - valueX;
-  return { labelWidth, valueX, valueWidth };
+  if (!hasDescription) {
+    const labelWidth = Math.floor(textWidth * 0.55);
+    const valueX = labelWidth + gap;
+    return { labelWidth, valueX, valueWidth: textWidth - valueX };
+  }
+  const labelWidth = Math.floor(textWidth * 0.3);
+  const descriptionX = labelWidth + gap;
+  const descriptionWidth = Math.floor(textWidth * 0.4);
+  const valueX = descriptionX + descriptionWidth + gap;
+  return { labelWidth, descriptionX, descriptionWidth, valueX, valueWidth: textWidth - valueX };
 }
 
 function measureRowHeight(
@@ -254,6 +294,10 @@ function measureRowHeight(
   layout: RowLayout,
 ): number {
   const labelHeight = measureTextHeight(doc, row.label, fonts.regular, fontSizes.body, layout.labelWidth, 2);
+  const descriptionHeight = row.description
+    ? measureTextHeight(doc, row.description, fonts.regular, fontSizes.body, layout.descriptionWidth!, 2)
+    : 0;
   const valueHeight = measureTextHeight(doc, row.value, fonts.regular, fontSizes.body, layout.valueWidth, 2);
-  return Math.max(labelHeight, valueHeight);
+  const contentHeight = Math.max(labelHeight, descriptionHeight, valueHeight);
+  return row.dividerBefore ? contentHeight + DIVIDER_HEIGHT + DIVIDER_GAP * 2 : contentHeight;
 }

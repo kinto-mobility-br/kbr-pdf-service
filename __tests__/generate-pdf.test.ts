@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { generatePdf } from '../index.js';
 import type { PdfReportInput } from '../types.js';
+import { extractPageSizes } from './pdf-geometry.js';
+import { extractPagesText } from './pdf-text.js';
 
 const PDF_PREFIX = '%PDF-1.';
 
@@ -294,5 +296,47 @@ describe('kbr-pdf-service — generatePdf', () => {
       summaryTitle: 'Inspection Summary',
     });
     expect(buffer.subarray(0, PDF_PREFIX.length).toString('utf-8')).toBe(PDF_PREFIX);
+  });
+
+  it('VER005 (regressão): sem orientation, todas as páginas continuam portrait (largura < altura)', async () => {
+    const buffer = await generatePdf({
+      summary: 'Report.',
+      sections: [{ title: 'Sec', items: [{ title: 'Item', description: 'Desc' }] }],
+    });
+    const sizes = extractPageSizes(buffer);
+    expect(sizes.length).toBeGreaterThan(0);
+    for (const size of sizes) {
+      expect(size.width).toBeLessThan(size.height);
+    }
+  });
+
+  it('VER006/VER007: orientation "landscape" aplica largura > altura em TODAS as páginas (capa e seções)', async () => {
+    const buffer = await generatePdf({
+      config: { orientation: 'landscape' },
+      summary: 'Report.',
+      sections: [{ title: 'Sec', items: [{ title: 'Item', description: 'Desc' }] }],
+    });
+    const sizes = extractPageSizes(buffer);
+    expect(sizes.length).toBeGreaterThanOrEqual(2);
+    for (const size of sizes) {
+      expect(size.width).toBeGreaterThan(size.height);
+    }
+  });
+
+  it('VER008 (regressão): orientation "landscape" não quebra a renderização de tabelas/rows', async () => {
+    const buffer = await generatePdf({
+      config: { orientation: 'landscape' },
+      sections: [
+        {
+          title: 'Lancamentos',
+          items: [{ title: 'Invoice #1', rows: [{ label: 'Base', value: 'R$ 10,00' }] } as never],
+        },
+      ],
+    });
+    expect(buffer.subarray(0, PDF_PREFIX.length).toString('utf-8')).toBe(PDF_PREFIX);
+    const allText = extractPagesText(buffer).join('\n');
+    expect(allText).toContain('Invoice #1');
+    expect(allText).toContain('Base');
+    expect(allText).toContain('R$ 10,00');
   });
 });
