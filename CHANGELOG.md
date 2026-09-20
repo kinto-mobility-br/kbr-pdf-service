@@ -3,6 +3,19 @@
 Histórico de mudanças deste repositório. Entradas são organizadas por data
 (mais recente no topo).
 
+## 2026-09-20 (2) — Cabeçalho ausente em páginas de continuação (overflow dentro da mesma seção)
+
+- **Correção de bug**: quando um card (`renderSection`) ou uma linha de
+  tabela (`renderTableSection`) não cabia na página atual, a nova página
+  era criada com `doc.addPage()` puro, sem re-desenhar o cabeçalho (logo,
+  título do relatório, referência e a faixa azul) — só a 1a página de cada
+  seção tinha cabeçalho; páginas seguintes dentro da mesma seção ficavam
+  com uma faixa em branco no topo (o espaço de `spacing.headerHeight`
+  continua reservado por `getContentArea`, só não era preenchido).
+  `renderSection`/`renderTableSection` passam a receber `headerTitle`/
+  `reference` e re-chamam `renderPageHeader` toda vez que abrem uma página
+  nova por overflow.
+
 ## 2026-09-20 — Selo de severidade como prefixo do título, ícone no título, overrides de tema (densidade) e correção de tamanho de página
 
 - **Correção de bug**: `PdfThemeOverrides` (`spacing`/`fontSizes`) nunca

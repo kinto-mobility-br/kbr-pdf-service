@@ -278,6 +278,16 @@ describe('kbr-pdf-service — PdfSectionItem.rows e suggestionLabel', () => {
     expect(pages[firstCardPage]).not.toContain('Invoice #2');
   });
 
+  it('BUG: pagina de continuacao dentro da mesma secao (card que estoura para a proxima pagina) tambem tem cabecalho', async () => {
+    const buffer = await generatePdf({
+      sections: [{ title: 'Lancamentos', items: [manyItemsCard('Invoice #1'), manyItemsCard('Invoice #2')] }],
+    });
+    const pages = extractPagesText(buffer);
+    const overflowPage = pages.findIndex((text) => text.includes('Invoice #2'));
+    expect(overflowPage).toBeGreaterThanOrEqual(0);
+    expect(pages[overflowPage]).toContain('KINTO Report');
+  });
+
   it('VER016: com o preset de densidade (spacing/fontSizes reduzidos, incl. dividerGap), os mesmos 2 cards de 18 linhas cabem na mesma pagina', async () => {
     const buffer = await generatePdf(
       { sections: [{ title: 'Lancamentos', items: [manyItemsCard('Invoice #1'), manyItemsCard('Invoice #2')] }] },

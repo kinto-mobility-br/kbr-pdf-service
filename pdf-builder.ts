@@ -95,6 +95,8 @@ export async function buildPdf(
         descriptor: section.descriptor,
         table: section.table,
         theme,
+        headerTitle: config.headerTitle,
+        reference: config.reference,
       });
     } else {
       renderSection({
@@ -104,6 +106,8 @@ export async function buildPdf(
         descriptor: section.descriptor,
         items: section.items ?? [],
         theme,
+        headerTitle: config.headerTitle,
+        reference: config.reference,
       });
     }
   }

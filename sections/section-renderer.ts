@@ -4,7 +4,7 @@ import { drawFilePathBadge, drawSeverityBadge, measureSeverityBadgeBox } from '.
 import { drawSectionTitle } from '../components/section-title.js';
 import { drawTextWithFallback, drawTextInFallbackFont } from '../components/text-fallback.js';
 import { loadSvg } from '../assets-loader.js';
-import { getContentArea } from './page-chrome.js';
+import { getContentArea, renderPageHeader } from './page-chrome.js';
 import type { PdfItemRow, PdfSectionItem } from '../types.js';
 import type { Theme } from '../theme.js';
 
@@ -19,10 +19,12 @@ interface RenderSectionArgs {
   descriptor?: string;
   items: PdfSectionItem[];
   theme: Theme;
+  headerTitle: string;
+  reference: string;
 }
 
 export function renderSection(args: RenderSectionArgs): void {
-  const { doc, number, title, descriptor, items, theme } = args;
+  const { doc, number, title, descriptor, items, theme, headerTitle, reference } = args;
   const { colors, fonts, fontSizes, spacing, limits } = theme;
   const area = getContentArea(doc, theme);
 
@@ -88,7 +90,7 @@ export function renderSection(args: RenderSectionArgs): void {
     const cardHeight =
       padding + titleRowHeight + titleDividerHeight + filePathHeight + descriptionHeight + rowsHeight + suggestionBlockHeight + padding;
 
-    cursorY = ensureSpaceOrNewPage(doc, theme, cursorY, cardHeight);
+    cursorY = ensureSpaceOrNewPage(doc, theme, cursorY, cardHeight, headerTitle, reference);
 
     drawCard({ doc, x: area.x, y: cursorY, width: area.width, height: cardHeight, theme });
 
@@ -284,11 +286,14 @@ function ensureSpaceOrNewPage(
   theme: Theme,
   cursorY: number,
   requiredHeight: number,
+  headerTitle: string,
+  reference: string,
 ): number {
   const area = getContentArea(doc, theme);
   const bottomLimit = area.y + area.height;
   if (cursorY + requiredHeight > bottomLimit) {
     doc.addPage();
+    renderPageHeader({ doc, headerTitle, reference, theme });
     return getContentArea(doc, theme).y + 8;
   }
   return cursorY;

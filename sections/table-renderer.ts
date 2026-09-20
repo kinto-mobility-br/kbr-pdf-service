@@ -1,6 +1,6 @@
 import { drawSectionTitle } from '../components/section-title.js';
 import { drawTextWithFallback } from '../components/text-fallback.js';
-import { getContentArea } from './page-chrome.js';
+import { getContentArea, renderPageHeader } from './page-chrome.js';
 import type { PdfTable, PdfTableColumn, PdfTableRow } from '../types.js';
 import type { Theme } from '../theme.js';
 
@@ -11,6 +11,8 @@ interface RenderTableSectionArgs {
   descriptor?: string;
   table: PdfTable;
   theme: Theme;
+  headerTitle: string;
+  reference: string;
 }
 
 const CELL_PADDING_X = 8;
@@ -20,7 +22,7 @@ const MIN_ROW_HEIGHT = 22;
 
 /** Desenha uma seção como tabela (cabeçalho + linhas), bem mais compacta que os cards de `renderSection` para listas longas de registros simples. */
 export function renderTableSection(args: RenderTableSectionArgs): void {
-  const { doc, number, title, descriptor, table, theme } = args;
+  const { doc, number, title, descriptor, table, theme, headerTitle, reference } = args;
   const { colors, fonts, fontSizes } = theme;
   const area = getContentArea(doc, theme);
 
@@ -54,6 +56,7 @@ export function renderTableSection(args: RenderTableSectionArgs): void {
 
     if (cursorY + rowHeight > bottomLimit) {
       doc.addPage();
+      renderPageHeader({ doc, headerTitle, reference, theme });
       const newArea = getContentArea(doc, theme);
       cursorY = drawTableHeader(doc, theme, newArea.x, newArea.y, table.columns, columnWidths);
     }
