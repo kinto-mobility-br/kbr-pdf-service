@@ -65,7 +65,7 @@ export function renderSection(args: RenderSectionArgs): void {
       textWidth - badgePrefixWidth - (item.titleIcon ? TITLE_ICON_SIZE + TITLE_ICON_GAP : 0);
     const titleHeight = measureTextHeight(doc, item.title, fonts.semibold, fontSizes.itemTitle, titleReservedWidth);
     const titleRowHeight = badgeBox ? Math.max(titleHeight, badgeBox.height) : titleHeight;
-    const titleDividerHeight = DIVIDER_HEIGHT + DIVIDER_GAP * 2;
+    const titleDividerHeight = DIVIDER_HEIGHT + spacing.dividerGap * 2;
     const filePathHeight = fileLine ? 22 : 0;
     const descriptionHeight = description
       ? measureTextHeight(doc, description, fonts.regular, fontSizes.body, textWidth, 2) + 8
@@ -74,7 +74,7 @@ export function renderSection(args: RenderSectionArgs): void {
     const rowsHeight = item.rows?.length
       ? item.rows.reduce((sum, row) => {
           const rowLayout = computeRowLayout(textWidth, Boolean(row.description));
-          return sum + measureRowHeight(doc, row, fonts, fontSizes, rowLayout) + spacing.itemRowGap;
+          return sum + measureRowHeight(doc, row, fonts, fontSizes, rowLayout, spacing.dividerGap) + spacing.itemRowGap;
         }, 0) + 4
       : 0;
 
@@ -125,7 +125,7 @@ export function renderSection(args: RenderSectionArgs): void {
       });
     }
 
-    let innerY = Math.max(doc.y, titleTopY + titleRowHeight) + DIVIDER_GAP;
+    let innerY = Math.max(doc.y, titleTopY + titleRowHeight) + spacing.dividerGap;
     doc
       .save()
       .moveTo(area.x + padding, innerY)
@@ -134,7 +134,7 @@ export function renderSection(args: RenderSectionArgs): void {
       .strokeColor(colors.n100LightGray)
       .stroke()
       .restore();
-    innerY += DIVIDER_GAP + DIVIDER_HEIGHT;
+    innerY += spacing.dividerGap + DIVIDER_HEIGHT;
 
     if (fileLine) {
       drawFilePathBadge({ doc, text: fileLine, x: area.x + padding, y: innerY, theme });
@@ -157,19 +157,19 @@ export function renderSection(args: RenderSectionArgs): void {
     if (item.rows?.length) {
       for (const row of item.rows) {
         const rowLayout = computeRowLayout(textWidth, Boolean(row.description));
-        const rowHeight = measureRowHeight(doc, row, fonts, fontSizes, rowLayout);
+        const rowHeight = measureRowHeight(doc, row, fonts, fontSizes, rowLayout, spacing.dividerGap);
 
         let rowY = innerY;
         if (row.dividerBefore) {
           doc
             .save()
-            .moveTo(area.x + padding, rowY + DIVIDER_GAP)
-            .lineTo(area.x + padding + textWidth, rowY + DIVIDER_GAP)
+            .moveTo(area.x + padding, rowY + spacing.dividerGap)
+            .lineTo(area.x + padding + textWidth, rowY + spacing.dividerGap)
             .lineWidth(DIVIDER_HEIGHT)
             .strokeColor(colors.n100LightGray)
             .stroke()
             .restore();
-          rowY += DIVIDER_GAP * 2 + DIVIDER_HEIGHT;
+          rowY += spacing.dividerGap * 2 + DIVIDER_HEIGHT;
         }
 
         doc.save().fillColor(colors.n800Charcoal);
@@ -303,7 +303,6 @@ interface RowLayout {
 }
 
 const DIVIDER_HEIGHT = 1;
-const DIVIDER_GAP = 6;
 
 /** 2 colunas (label/value) quando a linha nao tem description; 3 quando tem (decidido por linha,
  * nao por card — permite misturar linhas 2 e 3 colunas no mesmo card). */
@@ -327,6 +326,7 @@ function measureRowHeight(
   fonts: Theme['fonts'],
   fontSizes: Theme['fontSizes'],
   layout: RowLayout,
+  dividerGap: number,
 ): number {
   const font = row.bold ? fonts.bold : fonts.regular;
   const labelHeight = measureTextHeight(doc, row.label, font, fontSizes.body, layout.labelWidth, 2);
@@ -335,5 +335,5 @@ function measureRowHeight(
     : 0;
   const valueHeight = measureTextHeight(doc, row.value, font, fontSizes.body, layout.valueWidth, 2);
   const contentHeight = Math.max(labelHeight, descriptionHeight, valueHeight);
-  return row.dividerBefore ? contentHeight + DIVIDER_HEIGHT + DIVIDER_GAP * 2 : contentHeight;
+  return row.dividerBefore ? contentHeight + DIVIDER_HEIGHT + dividerGap * 2 : contentHeight;
 }

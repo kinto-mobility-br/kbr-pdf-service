@@ -5,6 +5,13 @@ Histórico de mudanças deste repositório. Entradas são organizadas por data
 
 ## 2026-09-20 — Selo de severidade como prefixo do título, ícone no título, overrides de tema (densidade) e correção de tamanho de página
 
+- `theme.ts`/`index.ts`/`sections/section-renderer.ts`: novo `spacing.dividerGap`
+  (espaçamento acima/abaixo dos traços divisores — título e linhas com
+  `dividerBefore`), extraído da constante fixa `DIVIDER_GAP` que antes só
+  existia dentro de `section-renderer.ts`. Adicionado à lista de campos
+  aceitos por `PdfThemeOverrides.spacing`, junto com `itemCardGap`/
+  `itemRowGap`/`cardPaddingDefault` já existentes — permite reduzir também o
+  espaçamento dos divisores ao ajustar a densidade de um relatório.
 - `types.ts`/`sections/section-renderer.ts`: novo `PdfItemRow.bold?: boolean`
   — desenha label e value da linha em negrito (fonte `bold`, com fallback
   `bold` correspondente), útil para destacar a linha de total/resultado de

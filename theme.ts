@@ -86,6 +86,7 @@ export const spacing = {
   coverBlockGap: 28,
   itemCardGap: 12,
   itemRowGap: 4,
+  dividerGap: 6,
   cardPaddingDefault: 16,
   cardPaddingLarge: 20,
   cardPaddingSmall: 14,

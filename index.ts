@@ -75,7 +75,7 @@ export { loadFont, loadFallbackFont, loadSvg } from './assets-loader.js';
  * branco/quebradas no meio da capa).
  */
 export interface PdfThemeOverrides {
-  spacing?: Pick<Theme['spacing'], 'itemCardGap' | 'itemRowGap' | 'cardPaddingDefault'>;
+  spacing?: Pick<Theme['spacing'], 'itemCardGap' | 'itemRowGap' | 'cardPaddingDefault' | 'dividerGap'>;
   fontSizes?: Pick<Theme['fontSizes'], 'body' | 'itemTitle'>;
 }
 

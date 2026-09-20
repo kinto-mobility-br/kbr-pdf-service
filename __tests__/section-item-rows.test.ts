@@ -245,5 +245,51 @@ describe('kbr-pdf-service — PdfSectionItem.rows e suggestionLabel', () => {
     expect(findLineFontWeight(buffer, 'Comissao base')).toBe('bold');
     expect(findLineFontWeight(buffer, 'R$ 100,00')).toBe('bold');
   });
+
+  /** Card com 18 linhas (perfil de um lancamento de comissao com varios itens de desconto/
+   * PROMOCODE) — 2 cards assim nao cabem numa pagina so no theme padrao, mas devem caber com
+   * o preset de densidade (`PdfThemeOverrides`) usado pelo dominio de comissoes. */
+  function manyItemsCard(title: string) {
+    const bucketRows = (label: string) =>
+      Array.from({ length: 5 }, (_, i) => ({ label: `${label} ${i + 1}`, value: `-R$ ${(i + 1) * 10},00` }));
+    return {
+      title,
+      rows: [
+        { label: 'Duracao total', value: 'R$ 1.000,00' },
+        ...bucketRows('Desconto por duracao'),
+        { label: 'Valor liquido', value: 'R$ 800,00', bold: true },
+        { label: 'Valor liquido', value: 'R$ 800,00', dividerBefore: true },
+        { label: 'Percentual aplicado', value: '10%' },
+        { label: 'Comissao base', value: 'R$ 80,00', bold: true },
+        { label: 'Comissao base', value: 'R$ 80,00', dividerBefore: true },
+        ...bucketRows('PROMOCODE'),
+        { label: 'Comissao', value: 'R$ 30,00', bold: true },
+      ],
+    } as never;
+  }
+
+  it('VER016 (regressão): 2 cards de 18 linhas cada NAO cabem numa pagina so no theme padrao', async () => {
+    const buffer = await generatePdf({
+      sections: [{ title: 'Lancamentos', items: [manyItemsCard('Invoice #1'), manyItemsCard('Invoice #2')] }],
+    });
+    const pages = extractPagesText(buffer);
+    const firstCardPage = pages.findIndex((text) => text.includes('Invoice #1'));
+    expect(firstCardPage).toBeGreaterThanOrEqual(0);
+    expect(pages[firstCardPage]).not.toContain('Invoice #2');
+  });
+
+  it('VER016: com o preset de densidade (spacing/fontSizes reduzidos, incl. dividerGap), os mesmos 2 cards de 18 linhas cabem na mesma pagina', async () => {
+    const buffer = await generatePdf(
+      { sections: [{ title: 'Lancamentos', items: [manyItemsCard('Invoice #1'), manyItemsCard('Invoice #2')] }] },
+      {
+        spacing: { cardPaddingDefault: 8, itemRowGap: 1, itemCardGap: 6, dividerGap: 2 },
+        fontSizes: { body: 8.5, itemTitle: 10.5 },
+      },
+    );
+    const pages = extractPagesText(buffer);
+    const firstCardPage = pages.findIndex((text) => text.includes('Invoice #1'));
+    expect(firstCardPage).toBeGreaterThanOrEqual(0);
+    expect(pages[firstCardPage]).toContain('Invoice #2');
+  });
 });
 
