@@ -5,6 +5,18 @@ Histórico de mudanças deste repositório. Entradas são organizadas por data
 
 ## 2026-09-20 — Selo de severidade como prefixo do título, ícone no título, overrides de tema (densidade) e correção de tamanho de página
 
+- **Correção de bug**: `PdfThemeOverrides` (`spacing`/`fontSizes`) nunca
+  funcionava de fato para um valor diferente do padrão — `Theme = typeof
+  theme`, e `spacing`/`fontSizes` eram declarados com `as const`, então cada
+  campo tinha um tipo literal exato (ex.: `itemCardGap: 12`, não `number`).
+  Passar `{ itemCardGap: 8 }` (ou qualquer valor diferente de `12`) já
+  falhava o typecheck de quem consumisse o pacote com TypeScript — só não
+  foi percebido antes porque `__tests__/` é excluído do `tsc` deste próprio
+  repositório e os testes existentes só liam os campos, sem atribuir um
+  valor diferente do default. Corrigido removendo `as const` de
+  `spacing`/`fontSizes` (campos passam a ser tipados como `number`, mantendo
+  os nomes das chaves) e trocando `PdfThemeOverrides` de `Pick<Theme[...]>`
+  para `Partial<Record<..., number>>`.
 - `theme.ts`/`index.ts`/`sections/section-renderer.ts`: novo `spacing.dividerGap`
   (espaçamento acima/abaixo dos traços divisores — título e linhas com
   `dividerBefore`), extraído da constante fixa `DIVIDER_GAP` que antes só

@@ -60,7 +60,22 @@ export const fallbackFonts = {
   bold: 'inter-bold',
 } as const;
 
-export const fontSizes = {
+export const fontSizes: Record<
+  | 'coverTitle'
+  | 'sectionTitle'
+  | 'itemTitle'
+  | 'cardHeading'
+  | 'body'
+  | 'bodyEmphasis'
+  | 'labelCaps'
+  | 'chrome'
+  | 'chromeStrong'
+  | 'metricBig'
+  | 'filePath'
+  | 'badge'
+  | 'kicker',
+  number
+> = {
   coverTitle: 32,
   sectionTitle: 20,
   itemTitle: 13,
@@ -74,9 +89,27 @@ export const fontSizes = {
   filePath: 9,
   badge: 8,
   kicker: 9,
-} as const;
+};
 
-export const spacing = {
+export const spacing: Record<
+  | 'pageMarginTop'
+  | 'pageMarginBottom'
+  | 'pageMarginLeft'
+  | 'pageMarginRight'
+  | 'headerHeight'
+  | 'footerHeight'
+  | 'coverBlockGap'
+  | 'itemCardGap'
+  | 'itemRowGap'
+  | 'dividerGap'
+  | 'cardPaddingDefault'
+  | 'cardPaddingLarge'
+  | 'cardPaddingSmall'
+  | 'cardRadius'
+  | 'badgeRadius'
+  | 'pillRadius',
+  number
+> = {
   pageMarginTop: 48,
   pageMarginBottom: 48,
   pageMarginLeft: 56,
@@ -93,7 +126,7 @@ export const spacing = {
   cardRadius: 4,
   badgeRadius: 999,
   pillRadius: 4,
-} as const;
+};
 
 export const limits = {
   maxFieldChars: 5000,
