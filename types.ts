@@ -31,6 +31,8 @@ export interface PdfSectionItem {
   file?: string;
   line?: number;
   severity?: 'high' | 'medium' | 'low' | string;
+  /** Nome de um asset SVG (ver assets/svg/) desenhado alinhado à direita, na mesma linha do título do card. */
+  titleIcon?: string;
 }
 
 /** Coluna de uma tabela de seção (ver `PdfTable`). */

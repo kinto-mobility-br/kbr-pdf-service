@@ -9,6 +9,8 @@
  *   const buffer = await generatePdf({ ... });
  */
 import { buildPdf } from './pdf-builder.js';
+import { theme as defaultTheme } from './theme.js';
+import type { Theme } from './theme.js';
 import type { PdfReportInput } from './types.js';
 
 export type {
@@ -61,10 +63,27 @@ export { loadFont, loadFallbackFont, loadSvg } from './assets-loader.js';
 // fora do grafo de módulos de quem só precisa de `generatePdf`.
 
 /**
+ * Overrides pontuais de layout (espaçamento/tamanho de fonte) mesclados por
+ * cima do theme padrão — nunca o theme inteiro, para não exigir que quem
+ * chame reconstrua cores/fontes/etc. só para ajustar densidade do relatório.
+ *
+ * Restrito aos campos usados exclusivamente pelos cards de item/tabela
+ * (nunca pela capa) — `cardPaddingLarge`/`cardPaddingSmall`/`fontSizes.metricBig`
+ * etc. também controlam a capa (resumo/overview cards); reduzi-los encolhe o
+ * espaço reservado ali e pode empurrar texto além da margem inferior,
+ * disparando a paginação automática silenciosa do pdfkit (páginas extras em
+ * branco/quebradas no meio da capa).
+ */
+export interface PdfThemeOverrides {
+  spacing?: Pick<Theme['spacing'], 'itemCardGap' | 'itemRowGap' | 'cardPaddingDefault'>;
+  fontSizes?: Pick<Theme['fontSizes'], 'body' | 'itemTitle'>;
+}
+
+/**
  * Gera um PDF com branding KINTO a partir de um input genérico.
  * Retorna o Buffer do PDF pronto para gravação em disco ou envio por e-mail.
  */
-export async function generatePdf(input: PdfReportInput): Promise<Buffer> {
+export async function generatePdf(input: PdfReportInput, themeOverrides?: PdfThemeOverrides): Promise<Buffer> {
   if (input === null || input === undefined) {
     throw new Error('PdfReportInput é obrigatório');
   }
@@ -76,5 +95,12 @@ export async function generatePdf(input: PdfReportInput): Promise<Buffer> {
     throw new Error('PdfReportInput não contém conteúdo para renderizar (summary ou sections)');
   }
 
-  return buildPdf(input);
+  if (!themeOverrides) return buildPdf(input);
+
+  const theme: Theme = {
+    ...defaultTheme,
+    spacing: { ...defaultTheme.spacing, ...themeOverrides.spacing },
+    fontSizes: { ...defaultTheme.fontSizes, ...themeOverrides.fontSizes },
+  };
+  return buildPdf(input, theme);
 }

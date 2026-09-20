@@ -1,10 +1,16 @@
+import SVGtoPDF from 'svg-to-pdfkit';
 import { drawCard } from '../components/card.js';
-import { drawFilePathBadge, drawSeverityBadge } from '../components/badge.js';
+import { drawFilePathBadge, drawSeverityBadge, measureSeverityBadgeBox } from '../components/badge.js';
 import { drawSectionTitle } from '../components/section-title.js';
 import { drawTextWithFallback } from '../components/text-fallback.js';
+import { loadSvg } from '../assets-loader.js';
 import { getContentArea } from './page-chrome.js';
 import type { PdfItemRow, PdfSectionItem } from '../types.js';
 import type { Theme } from '../theme.js';
+
+const TITLE_ICON_SIZE = 16;
+const TITLE_ICON_GAP = 8;
+const TITLE_BADGE_GAP = 8;
 
 interface RenderSectionArgs {
   doc: PDFKit.PDFDocument;
@@ -53,8 +59,13 @@ export function renderSection(args: RenderSectionArgs): void {
 
     const padding = spacing.cardPaddingDefault;
     const textWidth = area.width - padding * 2;
-    const badgeRow = hasSeverity ? 22 : 0;
-    const titleHeight = measureTextHeight(doc, item.title, fonts.semibold, fontSizes.itemTitle, textWidth);
+    const badgeBox = hasSeverity ? measureSeverityBadgeBox(doc, item.severity, theme) : undefined;
+    const badgePrefixWidth = badgeBox ? badgeBox.width + TITLE_BADGE_GAP : 0;
+    const titleReservedWidth =
+      textWidth - badgePrefixWidth - (item.titleIcon ? TITLE_ICON_SIZE + TITLE_ICON_GAP : 0);
+    const titleHeight = measureTextHeight(doc, item.title, fonts.semibold, fontSizes.itemTitle, titleReservedWidth);
+    const titleRowHeight = badgeBox ? Math.max(titleHeight, badgeBox.height) : titleHeight;
+    const titleDividerHeight = DIVIDER_HEIGHT + DIVIDER_GAP * 2;
     const filePathHeight = fileLine ? 22 : 0;
     const descriptionHeight = description
       ? measureTextHeight(doc, description, fonts.regular, fontSizes.body, textWidth, 2) + 8
@@ -75,33 +86,53 @@ export function renderSection(args: RenderSectionArgs): void {
     }
 
     const cardHeight =
-      padding + badgeRow + titleHeight + filePathHeight + descriptionHeight + rowsHeight + suggestionBlockHeight + padding;
+      padding + titleRowHeight + titleDividerHeight + filePathHeight + descriptionHeight + rowsHeight + suggestionBlockHeight + padding;
 
     cursorY = ensureSpaceOrNewPage(doc, theme, cursorY, cardHeight);
 
     drawCard({ doc, x: area.x, y: cursorY, width: area.width, height: cardHeight, theme });
 
-    if (hasSeverity) {
+    const titleTopY = cursorY + padding;
+    let titleX = area.x + padding;
+
+    if (badgeBox) {
       drawSeverityBadge({
         doc,
         severity: item.severity,
-        x: area.x + padding,
-        y: cursorY + padding,
+        x: titleX,
+        y: titleTopY + Math.max(0, (titleHeight - badgeBox.height) / 2),
         theme,
       });
+      titleX += badgePrefixWidth;
     }
-
-    let innerY = cursorY + padding + badgeRow;
 
     doc
       .save()
       .font(fonts.semibold)
       .fillColor(colors.n900Gunmetal);
-    drawTextWithFallback(doc, item.title, area.x + padding, innerY, fonts.semibold, theme.fallbackFonts.semibold, fontSizes.itemTitle, {
-      width: textWidth,
+    drawTextWithFallback(doc, item.title, titleX, titleTopY, fonts.semibold, theme.fallbackFonts.semibold, fontSizes.itemTitle, {
+      width: titleReservedWidth,
     });
-    innerY = doc.y + 4;
     doc.restore();
+
+    if (item.titleIcon) {
+      const iconSvg = loadSvg(item.titleIcon);
+      SVGtoPDF(doc, iconSvg, area.x + padding + textWidth - TITLE_ICON_SIZE, titleTopY, {
+        width: TITLE_ICON_SIZE,
+        height: TITLE_ICON_SIZE,
+      });
+    }
+
+    let innerY = Math.max(doc.y, titleTopY + titleRowHeight) + DIVIDER_GAP;
+    doc
+      .save()
+      .moveTo(area.x + padding, innerY)
+      .lineTo(area.x + padding + textWidth, innerY)
+      .lineWidth(DIVIDER_HEIGHT)
+      .strokeColor(colors.n100LightGray)
+      .stroke()
+      .restore();
+    innerY += DIVIDER_GAP + DIVIDER_HEIGHT;
 
     if (fileLine) {
       drawFilePathBadge({ doc, text: fileLine, x: area.x + padding, y: innerY, theme });
@@ -139,35 +170,35 @@ export function renderSection(args: RenderSectionArgs): void {
           rowY += DIVIDER_GAP * 2 + DIVIDER_HEIGHT;
         }
 
-        doc
-          .save()
-          .font(fonts.regular)
-          .fillColor(colors.n800Charcoal)
-          .text(row.label, area.x + padding, rowY, { width: rowLayout.labelWidth, lineGap: 2 })
-          .restore();
+        doc.save().fillColor(colors.n800Charcoal);
+        drawTextWithFallback(doc, row.label, area.x + padding, rowY, fonts.regular, theme.fallbackFonts.regular, fontSizes.body, {
+          width: rowLayout.labelWidth,
+          lineGap: 2,
+        });
+        doc.restore();
 
         if (row.description) {
-          doc
-            .save()
-            .font(fonts.regular)
-            .fillColor(colors.n600DarkElectricBlue)
-            .text(row.description, area.x + padding + rowLayout.descriptionX!, rowY, {
-              width: rowLayout.descriptionWidth,
-              lineGap: 2,
-            })
-            .restore();
+          doc.save().fillColor(colors.n600DarkElectricBlue);
+          drawTextWithFallback(
+            doc,
+            row.description,
+            area.x + padding + rowLayout.descriptionX!,
+            rowY,
+            fonts.regular,
+            theme.fallbackFonts.regular,
+            fontSizes.body,
+            { width: rowLayout.descriptionWidth, lineGap: 2 },
+          );
+          doc.restore();
         }
 
-        doc
-          .save()
-          .font(fonts.regular)
-          .fillColor(colors.n800Charcoal)
-          .text(row.value, area.x + padding + rowLayout.valueX, rowY, {
-            width: rowLayout.valueWidth,
-            align: 'right',
-            lineGap: 2,
-          })
-          .restore();
+        doc.save().fillColor(colors.n800Charcoal);
+        drawTextWithFallback(doc, row.value, area.x + padding + rowLayout.valueX, rowY, fonts.regular, theme.fallbackFonts.regular, fontSizes.body, {
+          width: rowLayout.valueWidth,
+          align: 'right',
+          lineGap: 2,
+        });
+        doc.restore();
 
         innerY += rowHeight + spacing.itemRowGap;
       }

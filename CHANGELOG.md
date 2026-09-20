@@ -3,6 +3,53 @@
 Histórico de mudanças deste repositório. Entradas são organizadas por data
 (mais recente no topo).
 
+## 2026-09-20 — Selo de severidade como prefixo do título, ícone no título, overrides de tema (densidade) e correção de tamanho de página
+
+- `sections/section-renderer.ts`: o selo de severidade (`HIGH`/`MEDIUM`/`LOW`)
+  passa a ser desenhado como **prefixo inline** do título do card (mesma
+  linha, alinhado verticalmente), em vez de ocupar uma linha própria acima —
+  e um divisor horizontal (mesmo estilo do divisor de `rows`) passa a ser
+  desenhado logo após o título, separando-o do restante do conteúdo do card.
+  Funciona também com título de 2+ linhas e simultaneamente com `titleIcon`.
+- `types.ts`/`section-renderer.ts`: novo `PdfSectionItem.titleIcon?: string`
+  — nome de um asset SVG (`assets/svg/`) desenhado alinhado à direita, na
+  mesma linha do título do card.
+- `components/badge.ts`: novo `measureSeverityBadgeBox()` (mede a caixa do
+  selo sem desenhar), necessário para reservar o espaço do prefixo antes de
+  posicionar o título.
+- `index.ts`: novo `PdfThemeOverrides` (parâmetro opcional de `generatePdf`)
+  para ajustar densidade (espaçamento/tamanho de fonte) sem reconstruir o
+  theme inteiro. Restrito, de propósito, aos campos usados exclusivamente
+  pelos cards de item/tabela (`spacing.itemCardGap`/`itemRowGap`/
+  `cardPaddingDefault`, `fontSizes.body`/`itemTitle`) — nunca aos campos que
+  também controlam a capa (`cardPaddingLarge`/`cardPaddingSmall`,
+  `fontSizes.metricBig` etc.). Motivo: um preset de densidade que reduzia
+  esses campos "de capa" empurrava o texto dos overview cards além da
+  margem inferior, disparando a paginação automática silenciosa do pdfkit
+  (páginas extras quebradas no meio da capa) — restringir o tipo evita essa
+  classe de erro para qualquer uso futuro.
+- `pdf-builder.ts`: **correção de bug** — `doc.addPage({ layout: ... })` (capa
+  e primeira página de cada seção) não herdava `size: 'A4'` do documento; o
+  pdfkit não mescla `addPage(options)` com as opções do construtor quando
+  qualquer objeto de opções é passado, caindo no padrão `letter` para campos
+  não especificados. Resultado: páginas com tamanhos inconsistentes dentro
+  do mesmo PDF (capa/1ª página de seção em `letter`, páginas seguintes via
+  paginação automática em `A4`). Corrigido especificando `size: 'A4'`
+  explicitamente nas duas chamadas.
+- `sections/section-renderer.ts`: linhas de `PdfItemRow` (label/description/
+  value) passam a usar `drawTextWithFallback` (mecanismo de fallback de
+  fonte) em vez de `.text()` direto — corrige glifos quebrados (ex.:
+  "Locação") quando a fonte principal não cobre certos acentos.
+- Validado: `tsc --noEmit` e `vitest run` (61 testes, sem regressão) a cada
+  mudança; PDFs reais gerados localmente e inspecionados visualmente
+  (rasterização via `mupdf`) para os dois bugs e para o novo layout de
+  selo/divisor.
+- Motivada pela demanda de redesenho de card de comissão do
+  `kbr-domain-dealers-commissions` (ícone Kinto no lugar da row "Veiculo
+  Kinto", densidade para caber 2 cards por página) — os dois bugs foram
+  encontrados durante a validação visual local desse trabalho, não
+  reportados previamente.
+
 ## 2026-09-20 — 3ª coluna (`description`) e divisor (`dividerBefore`) em `PdfItemRow`, orientação landscape
 
 - `types.ts`: `PdfItemRow` ganha `description?: string` (coluna do meio,

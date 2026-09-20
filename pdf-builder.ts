@@ -57,7 +57,7 @@ export async function buildPdf(
 
   registerFonts(doc, theme);
   doc.font(theme.fonts.regular);
-  doc.addPage({ layout: config.orientation });
+  doc.addPage({ size: 'A4', layout: config.orientation });
 
   const chunks: Buffer[] = [];
   const completion = new Promise<Buffer>((resolve, reject) => {
@@ -85,7 +85,7 @@ export async function buildPdf(
     const hasItems = (section?.items?.length ?? 0) > 0;
     const hasTable = (section?.table?.rows.length ?? 0) > 0;
     if (!section || (!hasItems && !hasTable)) continue;
-    doc.addPage({ layout: config.orientation });
+    doc.addPage({ size: 'A4', layout: config.orientation });
     renderPageHeader({ doc, headerTitle: config.headerTitle, reference: config.reference, theme });
     if (hasTable && section.table) {
       renderTableSection({

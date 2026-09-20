@@ -16,6 +16,25 @@ export interface BadgeBox {
   height: number;
 }
 
+/** Mede a caixa do selo de severidade sem desenhar — usado para reservar espaço antes de posicionar o título. */
+export function measureSeverityBadgeBox(
+  doc: PDFKit.PDFDocument,
+  severity: string | undefined,
+  theme: Theme,
+): { width: number; height: number } {
+  const style = theme.severityStyle(severity);
+  const paddingX = 8;
+  const paddingY = 4;
+
+  doc.save();
+  doc.font(theme.fonts.bold).fontSize(theme.fontSizes.badge);
+  const width = doc.widthOfString(style.label) + paddingX * 2;
+  const height = doc.currentLineHeight() + paddingY * 2;
+  doc.restore();
+
+  return { width, height };
+}
+
 export function drawSeverityBadge(args: DrawSeverityBadgeArgs): BadgeBox {
   const { doc, severity, x, y, theme } = args;
   const style = theme.severityStyle(severity);
