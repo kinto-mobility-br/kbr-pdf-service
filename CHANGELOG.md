@@ -5,6 +5,18 @@ Histórico de mudanças deste repositório. Entradas são organizadas por data
 
 ## 2026-09-20 — Selo de severidade como prefixo do título, ícone no título, overrides de tema (densidade) e correção de tamanho de página
 
+- `components/text-fallback.ts`: nova `drawTextInFallbackFont()` — sempre
+  desenha na fonte de fallback (Inter, tamanho equalizado), sem checar
+  glifos. `sections/section-renderer.ts` passa a usar essa função para
+  `PdfItemRow.description` (descrição de linha dentro de um card), em vez de
+  `drawTextWithFallback()`. Motivo: a troca de fonte depende do texto inteiro
+  conter algum caractere não suportado pela Toyota Type (`ã`, `ç`, `õ` etc.)
+  — descrições como "Locação acima de 15 dias" sempre caíam no fallback
+  (Inter), enquanto outras como "PROMOCODE - 50% Desconto Concessionário"
+  (sem esses caracteres específicos) permaneciam na fonte de marca, fazendo
+  duas descrições do mesmo card parecerem em fontes diferentes. Forçando
+  sempre o fallback para esse campo, todas as descrições de linha ficam no
+  mesmo padrão visual, independente do conteúdo.
 - `sections/section-renderer.ts`: **inverte os lados** do ícone do título
   (`titleIcon`) e do selo de severidade — o ícone passa a ser o prefixo à
   esquerda do título, e o selo de severidade passa a ficar alinhado à

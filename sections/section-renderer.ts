@@ -2,7 +2,7 @@ import SVGtoPDF from 'svg-to-pdfkit';
 import { drawCard } from '../components/card.js';
 import { drawFilePathBadge, drawSeverityBadge, measureSeverityBadgeBox } from '../components/badge.js';
 import { drawSectionTitle } from '../components/section-title.js';
-import { drawTextWithFallback } from '../components/text-fallback.js';
+import { drawTextWithFallback, drawTextInFallbackFont } from '../components/text-fallback.js';
 import { loadSvg } from '../assets-loader.js';
 import { getContentArea } from './page-chrome.js';
 import type { PdfItemRow, PdfSectionItem } from '../types.js';
@@ -181,12 +181,14 @@ export function renderSection(args: RenderSectionArgs): void {
 
         if (row.description) {
           doc.save().fillColor(colors.n600DarkElectricBlue);
-          drawTextWithFallback(
+          // Fonte de fallback sempre forcada: descricoes de linha nao devem alternar entre
+          // Toyota Type/Inter dependendo so de ter ou nao diacritico no texto (ex.: "Locacao
+          // acima de X dias" vs "PROMOCODE - X% Desconto Concessionario").
+          drawTextInFallbackFont(
             doc,
             row.description,
             area.x + padding + rowLayout.descriptionX!,
             rowY,
-            fonts.regular,
             theme.fallbackFonts.regular,
             fontSizes.body,
             { width: rowLayout.descriptionWidth, lineGap: 2 },

@@ -113,6 +113,32 @@ export function drawTextWithFallback(
   return drawSegmentedText(doc, [{ text, font: primaryFont, fallbackFont }], x, y, fontSize, options);
 }
 
+/**
+ * Como `drawTextWithFallback`, mas sempre usa `fallbackFont` (tamanho
+ * equalizado), independente dos caracteres do texto. Usado quando várias
+ * instâncias do MESMO tipo de campo (ex.: descrição de linha de um card)
+ * precisam do mesmo padrão visual, mesmo que só algumas contenham
+ * diacrítico não suportado pela fonte principal (ver nota do módulo) — sem
+ * isso, uma instância renderiza na fonte de marca e outra no fallback,
+ * dependendo só do conteúdo.
+ */
+export function drawTextInFallbackFont(
+  doc: PDFKit.PDFDocument,
+  text: string,
+  x: number,
+  y: number,
+  fallbackFont: string,
+  fontSize: number,
+  options?: PDFKit.Mixins.TextOptions,
+): number {
+  const fallbackFontSize = fontSize * getFallbackSizeScale();
+  doc.font(fallbackFont).fontSize(fallbackFontSize);
+  doc.text(text, x, y, options);
+  doc.font(fallbackFont).fontSize(fontSize);
+  return doc.y;
+}
+
+
 export interface FallbackTextPart {
   /** Texto do trecho. */
   text: string;
