@@ -3,6 +3,12 @@
 Histórico de mudanças deste repositório. Entradas são organizadas por data
 (mais recente no topo).
 
+## 2026-09-21 — README completo do repositório
+
+- Cria o `README.md` (inexistente até então), seguindo o padrão corporativo
+  de documentação adaptado para uma biblioteca sem deploy AWS próprio:
+  descrição/uso, estrutura de diretórios, como rodar testes e responsáveis.
+
 ## 2026-09-20 (2) — Cabeçalho ausente em páginas de continuação (overflow dentro da mesma seção)
 
 - **Correção de bug**: quando um card (`renderSection`) ou uma linha de
