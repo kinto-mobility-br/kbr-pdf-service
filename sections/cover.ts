@@ -97,11 +97,16 @@ export function renderCover(args: RenderCoverArgs): void {
   const showOverview = overviewCards !== undefined && overviewCards.length > 0;
   const overviewReserved = showOverview ? overviewBlockHeight + spacing.coverBlockGap : 0;
 
-  // 6. Card "Resumo" (summary)
+  // 6. Card "Resumo" (summary) — so renderiza se sobrar altura suficiente para o
+  // card conter titulo + texto. Em landscape (pagina baixa) o espaco entre a
+  // metadata e o bloco overview fixado na base pode ser menor que isso; nesse
+  // caso o card e omitido para nao colapsar numa faixa fina com o texto vazando
+  // (a mesma informacao ja aparece na metadata e nos overview cards).
+  const minSummaryCardHeight = spacing.cardPaddingLarge * 2 + 22 + fontSizes.bodyEmphasis * 2;
   if (summary && summary.trim().length > 0) {
-    const summaryText = theme.truncate(summary.trim(), limits.maxSummaryChars);
     const summaryCardHeight = bottomLimit - overviewReserved - cursorY;
-    if (summaryCardHeight > 0) {
+    if (summaryCardHeight >= minSummaryCardHeight) {
+      const summaryText = theme.truncate(summary.trim(), limits.maxSummaryChars);
       renderSummaryCard(doc, summaryText, summaryTitle ?? 'Resumo', theme, area.x, cursorY, area.width, summaryCardHeight);
     }
   }

@@ -3,6 +3,17 @@
 Histórico de mudanças deste repositório. Entradas são organizadas por data
 (mais recente no topo).
 
+## 2026-09-22 — Capa: não renderizar o card "Resumo" quando não couber
+
+- **Correção de layout**: em orientação `landscape` (página baixa), o espaço
+  vertical entre a metadata e o bloco de overview fixado na base da capa podia
+  ser menor que a altura mínima do card "Resumo" — o card colapsava numa faixa
+  fina e o título/texto vazavam para fora da borda. Agora o card só é
+  renderizado quando há altura suficiente para conter título + texto; caso
+  contrário é omitido (a mesma informação já aparece na metadata e nos overview
+  cards). Orientação `portrait` (ex.: kbr-domain-invoices) fica inalterada — o
+  comportamento só muda quando o card não caberia.
+
 ## 2026-09-21 — README completo do repositório
 
 - Cria o `README.md` (inexistente até então), seguindo o padrão corporativo
