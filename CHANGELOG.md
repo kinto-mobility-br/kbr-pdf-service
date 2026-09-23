@@ -3,6 +3,19 @@
 Histórico de mudanças deste repositório. Entradas são organizadas por data
 (mais recente no topo).
 
+## 2026-09-23 — Corrige sobreposição de linhas quando um campo "Label: value" tem valor vazio
+
+- **Correção de bug** (reserva `l2x34jp`, `kbr-domain-billing`): `drawSegmentedText`
+  encadeia label + valor numa única chamada de texto com `continued`; quando o
+  valor era string vazia (ex.: campo "Endereço" do destinatário sem
+  `street`/`number` cadastrados), o PDFKit não emitia nenhuma linha para o
+  trecho vazio (o `LineWrapper` conta zero palavras) e `doc.y` não avançava —
+  a linha seguinte ("Bairro"/"Município"/"CEP") era desenhada quase por cima
+  da anterior. Agora, quando `options.width` está setado, um trecho vazio é
+  substituído por um espaço em branco antes de desenhar (sem efeito visual,
+  já que não há glifo), garantindo que o PDFKit compute a altura da linha
+  normalmente.
+
 ## 2026-09-22 — Capa: não renderizar o card "Resumo" quando não couber
 
 - **Correção de layout**: em orientação `landscape` (página baixa), o espaço

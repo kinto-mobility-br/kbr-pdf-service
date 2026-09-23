@@ -174,15 +174,22 @@ export function drawSegmentedText(
 
   parts.forEach((part, i) => {
     const isLast = i === parts.length - 1;
-    const needsFallback = textNeedsFallback(part.text);
+    // Com `options.width` setado, o LineWrapper do PDFKit conta 0 palavras
+    // pra um trecho vazio e pula o `emitLine()` — `doc.y` não avança, e a
+    // próxima linha desenhada por cima (bug reproduzido: reserva l2x34jp,
+    // rótulo sem valor, ex. "Endereço"/"Bairro" em branco). Um espaço não
+    // desenha glifo (mesmo efeito visual de string vazia) mas garante que o
+    // PDFKit emita a linha e compute a altura normalmente.
+    const text = options?.width && part.text === '' ? ' ' : part.text;
+    const needsFallback = textNeedsFallback(text);
 
     doc.font(needsFallback ? part.fallbackFont : part.font);
     doc.fontSize(needsFallback ? fallbackFontSize : fontSize);
     if (part.color) doc.fillColor(part.color);
     if (i === 0) {
-      doc.text(part.text, x, y, { ...options, continued: !isLast });
+      doc.text(text, x, y, { ...options, continued: !isLast });
     } else {
-      doc.text(part.text, { continued: !isLast });
+      doc.text(text, { continued: !isLast });
     }
   });
 

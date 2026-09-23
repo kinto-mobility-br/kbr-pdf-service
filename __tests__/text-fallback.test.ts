@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import PDFDocument from 'pdfkit';
 import { loadFont, loadFallbackFont } from '../assets-loader.js';
-import { drawTextWithFallback, drawTextInFallbackFont } from '../components/text-fallback.js';
+import { drawTextWithFallback, drawTextInFallbackFont, drawSegmentedText } from '../components/text-fallback.js';
 
 const PRIMARY_FONT = 'Primary';
 const FALLBACK_FONT = 'Fallback';
@@ -50,6 +50,43 @@ describe('components/text-fallback — drawTextInFallbackFont', () => {
     const scaledSizeFromForcedFallback = fontSizeSpy.mock.calls[0]?.[0];
 
     expect(scaledSizeFromForcedFallback).toBe(scaledSizeFromExistingFallback);
+    doc.end();
+  });
+});
+
+describe('components/text-fallback — drawSegmentedText com último trecho vazio', () => {
+  it('BUG-l2x34jp - avança doc.y na mesma altura de um trecho preenchido, mesmo quando o valor (último part) é string vazia', () => {
+    const doc = createTestDoc();
+    const startY = 100;
+
+    const afterWithValue = drawSegmentedText(
+      doc,
+      [
+        { text: 'Endereço: ', font: PRIMARY_FONT, fallbackFont: FALLBACK_FONT },
+        { text: 'Rua Teste, 123', font: PRIMARY_FONT, fallbackFont: FALLBACK_FONT },
+      ],
+      10,
+      startY,
+      9,
+      { width: 200 },
+    );
+
+    const afterEmptyValue = drawSegmentedText(
+      doc,
+      [
+        { text: 'Bairro: ', font: PRIMARY_FONT, fallbackFont: FALLBACK_FONT },
+        { text: '', font: PRIMARY_FONT, fallbackFont: FALLBACK_FONT },
+      ],
+      10,
+      startY,
+      9,
+      { width: 200 },
+    );
+
+    // Sintoma real: quando o valor é vazio, doc.y não avança (fica igual a
+    // startY), então a linha seguinte é desenhada sobre esta (overlap visual).
+    expect(afterEmptyValue).toBeGreaterThan(startY);
+    expect(afterEmptyValue).toBe(afterWithValue);
     doc.end();
   });
 });
