@@ -3,6 +3,15 @@
 Histórico de mudanças deste repositório. Entradas são organizadas por data
 (mais recente no topo).
 
+## 2026-09-25 — Arquivamento pós-entrega de demandas concluídas
+
+- **Housekeeping** (`doc/archive`): move `doc/20260919_card-linhas-e-rotulo-customizavel`
+  e `doc/20260920_card-item-descricao-divisor-orientacao-paisagem` para
+  `doc/archive/`, com `doc/archive/INDEX.md` novo listando data, identificador,
+  veredito e link do `review.md` de cada uma. Ambas já tinham merge confirmado
+  em `main` (PR #4 e PR #5) e veredito `APROVADO COM OBSERVAÇÕES`. Nenhum
+  conteúdo removido — apenas movido (`git mv`), histórico preservado.
+
 ## 2026-09-23 — Corrige sobreposição de linhas quando um campo "Label: value" tem valor vazio
 
 - **Correção de bug** (reserva `l2x34jp`, `kbr-domain-billing`): `drawSegmentedText`
