@@ -11,6 +11,11 @@ Histórico de mudanças deste repositório. Entradas são organizadas por data
   veredito e link do `review.md` de cada uma. Ambas já tinham merge confirmado
   em `main` (PR #4 e PR #5) e veredito `APROVADO COM OBSERVAÇÕES`. Nenhum
   conteúdo removido — apenas movido (`git mv`), histórico preservado.
+- **Housekeeping** (`doc/archive`): move `doc/20260923_bug-layout-fatura-endereco-vazio-l2x34jp`
+  para `doc/archive/`. Fix já confirmado mergeado em `main` (commit `d2f915c`);
+  sem `review.md` formal — arquivamento autorizado explicitamente pelo humano
+  mesmo assim. `doc/archive/INDEX.md` atualizado com a linha correspondente,
+  apontando para o `bug-assessment.md` da demanda.
 
 ## 2026-09-23 — Corrige sobreposição de linhas quando um campo "Label: value" tem valor vazio
 
