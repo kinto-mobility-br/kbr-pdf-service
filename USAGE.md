@@ -53,18 +53,18 @@ import type {
   PdfOverviewCard,
 } from './services/kbr-pdf-service/index.js';
 
-// Processamento de imagens e PDFs
+// Processamento de imagens e PDFs (subpath export dedicado, não vem do index.js raiz)
 import {
   imageCompressionService,
   ImageCompressionService,
   pdfAttachmentService,
   PdfAttachmentService,
   rasterizePdfToJpegs,
-} from './services/kbr-pdf-service/index.js';
+} from './services/kbr-pdf-service/processing/index.js';
 import type {
   CompressionOptions,
   CompressionResult,
-} from './services/kbr-pdf-service/index.js';
+} from './services/kbr-pdf-service/processing/index.js';
 ```
 
 ---
@@ -109,6 +109,7 @@ interface PdfReportConfig {
   coverTitle?: string;    // Default: "Report"
   footerText?: string;    // Default: "© KINTO MOBILITY · DOCUMENTO CONFIDENCIAL"
   openPassword?: string;  // Default: indefinido (PDF sem proteção)
+  orientation?: 'portrait' | 'landscape'; // Default: 'portrait'
 }
 ```
 
@@ -128,7 +129,8 @@ const buffer = await generatePdf({
 interface PdfSection {
   title: string;
   descriptor?: string;
-  items: PdfSectionItem[];
+  items?: PdfSectionItem[]; // cards, um por item
+  table?: PdfTable;         // alternativa compacta: várias linhas por página
 }
 ```
 
@@ -138,10 +140,45 @@ interface PdfSection {
 interface PdfSectionItem {
   title: string;
   description: string;
+  rows?: PdfItemRow[];        // linhas rótulo/valor (ex.: descontos de um invoice) após a description
   suggestion?: string;
+  suggestionLabel?: string;   // rótulo do bloco de suggestion (default: "SUGGESTION")
   file?: string;
   line?: number;
   severity?: 'high' | 'medium' | 'low' | string;
+  titleIcon?: string;         // nome de um asset SVG desenhado ao lado do título
+}
+```
+
+### `PdfItemRow`
+
+```typescript
+interface PdfItemRow {
+  label: string;
+  value: string;
+  description?: string;  // coluna do meio opcional (presente vira 3 colunas, ausente mantém 2)
+  dividerBefore?: boolean; // traço horizontal acima da linha
+  bold?: boolean;           // label e value em negrito (ex.: linha de total)
+}
+```
+
+### `PdfTable` / `PdfTableColumn` / `PdfTableRow`
+
+```typescript
+interface PdfTable {
+  columns: PdfTableColumn[];
+  rows: PdfTableRow[];
+}
+
+interface PdfTableColumn {
+  key: string;      // chave buscada em PdfTableRow.cells
+  label: string;    // texto do cabeçalho
+  width?: number;   // largura relativa (0 a 1); sem width divide o espaço restante igualmente
+}
+
+interface PdfTableRow {
+  cells: Record<string, string>;
+  severity?: 'high' | 'medium' | 'low' | string; // destaca a linha quando definida
 }
 ```
 
@@ -425,8 +462,8 @@ Comprime imagens com `sharp` para otimizar o tamanho final do PDF.
 | targetMaxSizeKb | 500 KB |
 
 ```typescript
-import { imageCompressionService } from './services/kbr-pdf-service/index.js';
-import type { CompressionOptions, CompressionResult } from './services/kbr-pdf-service/index.js';
+import { imageCompressionService } from './services/kbr-pdf-service/processing/index.js';
+import type { CompressionOptions, CompressionResult } from './services/kbr-pdf-service/processing/index.js';
 
 // Comprimir uma única imagem
 const result: CompressionResult = await imageCompressionService.compressImage(
@@ -476,7 +513,7 @@ Lida automaticamente com PDFs criptografados:
 3. Se ambos falharem → lança erro
 
 ```typescript
-import { pdfAttachmentService, rasterizePdfToJpegs } from './services/kbr-pdf-service/index.js';
+import { pdfAttachmentService, rasterizePdfToJpegs } from './services/kbr-pdf-service/processing/index.js';
 
 // Rasterizar PDF (possivelmente criptografado) em array de JPEGs
 const jpegPages: Buffer[] = await rasterizePdfToJpegs(pdfBuffer);
@@ -511,7 +548,7 @@ import {
   imageCompressionService,
   rasterizePdfToJpegs,
   pdfAttachmentService,
-} from './services/kbr-pdf-service/index.js';
+} from './services/kbr-pdf-service/processing/index.js';
 
 /**
  * Verifica se o buffer é um PDF (magic bytes %PDF-)

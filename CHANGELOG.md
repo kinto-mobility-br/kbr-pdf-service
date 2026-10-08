@@ -3,6 +3,20 @@
 Histórico de mudanças deste repositório. Entradas são organizadas por data
 (mais recente no topo).
 
+## 2026-10-08 — Corrige USAGE.md: import de `processing` e tipos desatualizados
+
+- **Correção de documentação**: todos os exemplos de `imageCompressionService`/
+  `pdfAttachmentService`/`rasterizePdfToJpegs` apontavam para
+  `./services/kbr-pdf-service/index.js` (entry point raiz), mas esses exports
+  vivem apenas no subpath `./processing` (`package.json` declara um export
+  separado; o `index.ts` raiz não os reexporta, guard testado em
+  `__tests__/entry-points.test.ts`). Corrigidos os 4 exemplos afetados.
+- Documentados tipos que existiam em `types.ts` mas não apareciam no USAGE.md:
+  `PdfItemRow`, `PdfTable`, `PdfTableColumn`, `PdfTableRow`, campo
+  `orientation` em `PdfReportConfig`, e campos `rows`/`suggestionLabel`/
+  `titleIcon` em `PdfSectionItem` (`items` também passa a constar como
+  opcional, já que `PdfSection.table` é uma alternativa válida).
+
 ## 2026-09-23 — Corrige sobreposição de linhas quando um campo "Label: value" tem valor vazio
 
 - **Correção de bug** (reserva `l2x34jp`, `kbr-domain-billing`): `drawSegmentedText`
