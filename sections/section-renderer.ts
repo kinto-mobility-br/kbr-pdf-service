@@ -12,6 +12,27 @@ const TITLE_ICON_SIZE = 16;
 const TITLE_ICON_GAP = 8;
 const TITLE_BADGE_GAP = 8;
 
+const titleIconAspectCache = new Map<string, number>();
+
+/** Proporção largura/altura do ícone (via viewBox do SVG), para desenhar wordmarks largos
+ * (ex.: KINTO_BLUE) sem distorção. Ícones quadrados retornam ~1 (comportamento inalterado). */
+function titleIconAspect(iconName: string): number {
+  const cached = titleIconAspectCache.get(iconName);
+  if (cached !== undefined) return cached;
+  let aspect = 1;
+  const match = loadSvg(iconName).match(/viewBox\s*=\s*"([\d.\s-]+)"/);
+  if (match) {
+    const [, , w, h] = match[1].trim().split(/\s+/).map(Number);
+    if (w > 0 && h > 0) aspect = w / h;
+  }
+  titleIconAspectCache.set(iconName, aspect);
+  return aspect;
+}
+
+function titleIconWidth(iconName: string): number {
+  return TITLE_ICON_SIZE * titleIconAspect(iconName);
+}
+
 interface RenderSectionArgs {
   doc: PDFKit.PDFDocument;
   number: number;
@@ -64,7 +85,7 @@ export function renderSection(args: RenderSectionArgs): void {
     const badgeBox = hasSeverity ? measureSeverityBadgeBox(doc, item.severity, theme) : undefined;
     const badgePrefixWidth = badgeBox ? badgeBox.width + TITLE_BADGE_GAP : 0;
     const titleReservedWidth =
-      textWidth - badgePrefixWidth - (item.titleIcon ? TITLE_ICON_SIZE + TITLE_ICON_GAP : 0);
+      textWidth - badgePrefixWidth - (item.titleIcon ? titleIconWidth(item.titleIcon) + TITLE_ICON_GAP : 0);
     const titleHeight = measureTextHeight(doc, item.title, fonts.semibold, fontSizes.itemTitle, titleReservedWidth);
     const titleRowHeight = badgeBox ? Math.max(titleHeight, badgeBox.height) : titleHeight;
     const titleDividerHeight = DIVIDER_HEIGHT + spacing.dividerGap * 2;
@@ -101,11 +122,12 @@ export function renderSection(args: RenderSectionArgs): void {
     // fica a direita, alinhado ao fim da linha.
     if (item.titleIcon) {
       const iconSvg = loadSvg(item.titleIcon);
+      const iconWidth = titleIconWidth(item.titleIcon);
       SVGtoPDF(doc, iconSvg, titleX, titleTopY, {
-        width: TITLE_ICON_SIZE,
+        width: iconWidth,
         height: TITLE_ICON_SIZE,
       });
-      titleX += TITLE_ICON_SIZE + TITLE_ICON_GAP;
+      titleX += iconWidth + TITLE_ICON_GAP;
     }
 
     doc

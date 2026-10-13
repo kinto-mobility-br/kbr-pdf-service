@@ -131,8 +131,11 @@ interface PdfSection {
   descriptor?: string;
   items?: PdfSectionItem[]; // cards, um por item
   table?: PdfTable;         // alternativa compacta: várias linhas por página
+  tables?: PdfTable[];      // várias tabelas empilhadas na mesma página (cada uma com seu `title`)
 }
 ```
+
+> Prioridade de renderização quando mais de um campo está presente: `tables` → `table` → `items`.
 
 ### `PdfSectionItem`
 
@@ -166,6 +169,8 @@ interface PdfItemRow {
 
 ```typescript
 interface PdfTable {
+  title?: string;   // sub-título acima do cabeçalho (ao empilhar tabelas via `PdfSection.tables`)
+  dense?: boolean;  // modo compacto: fonte/padding/altura reduzidos (não afeta outras tabelas)
   columns: PdfTableColumn[];
   rows: PdfTableRow[];
 }
@@ -174,11 +179,13 @@ interface PdfTableColumn {
   key: string;      // chave buscada em PdfTableRow.cells
   label: string;    // texto do cabeçalho
   width?: number;   // largura relativa (0 a 1); sem width divide o espaço restante igualmente
+  align?: 'left' | 'right' | 'center'; // alinhamento do cabeçalho e das células (default: left)
 }
 
 interface PdfTableRow {
   cells: Record<string, string>;
   severity?: 'high' | 'medium' | 'low' | string; // destaca a linha quando definida
+  bold?: boolean;   // texto da linha em negrito (ex.: linha de total)
 }
 ```
 

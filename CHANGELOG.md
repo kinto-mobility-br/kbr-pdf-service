@@ -3,6 +3,27 @@
 Histórico de mudanças deste repositório. Entradas são organizadas por data
 (mais recente no topo).
 
+## 2026-10-13 — Múltiplas tabelas por página, modo compacto e refinamentos de tabela/ícone
+
+- **Nova capability — várias tabelas empilhadas numa seção/página** (`PdfSection.tables`):
+  permite um resumo com N tabelas na mesma página, cada uma com seu `title`. Prioridade de
+  renderização quando mais de um campo coexiste: `tables` → `table` → `items` (aditivo e
+  retrocompatível; `table`/`items` legados inalterados). Motivada pelo relatório de comissão,
+  que passa a abrir com uma página-resumo de 3 tabelas antes dos cards.
+- **Modo compacto de tabela** (`PdfTable.dense`): fonte, padding e altura de linha/cabeçalho
+  reduzidos, aplicável por tabela — sem afetar as demais tabelas do serviço (pendências/NFSe).
+- **Alinhamento por coluna** (`PdfTableColumn.align: 'left' | 'right' | 'center'`) e **linha
+  em negrito** (`PdfTableRow.bold`), para destacar colunas de valor (ex.: total à direita) e
+  linhas de total.
+- **Cabeçalho de tabela com altura dinâmica**: rótulos longos quebram em múltiplas linhas sem
+  invadir a linha de base azul (antes a altura era fixa em 24px e o texto vazava).
+- **`titleIcon` ciente de proporção**: wordmarks largos (ex.: `KINTO_BLUE`, o logo da capa)
+  são desenhados sem distorção, calculando a largura pelo `viewBox` do SVG; ícones quadrados
+  seguem inalterados.
+- **Harness de desenvolvimento** `scripts/commission-summary-demo.ts` (`npm run commission-demo`)
+  para validar localmente o layout das tabelas-resumo, incluindo quebra de página de tabela longa.
+- `USAGE.md` atualizado com os novos campos e a prioridade de renderização.
+
 ## 2026-10-08 — Corrige USAGE.md: import de `processing` e tipos desatualizados
 
 - **Correção de documentação**: todos os exemplos de `imageCompressionService`/

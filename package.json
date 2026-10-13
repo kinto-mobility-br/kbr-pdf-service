@@ -27,6 +27,7 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "demo": "tsx scripts/demo.ts",
+    "commission-demo": "tsx scripts/commission-summary-demo.ts",
     "json-to-pdf": "tsx scripts/json-fields-pdf.ts"
   },
   "dependencies": {

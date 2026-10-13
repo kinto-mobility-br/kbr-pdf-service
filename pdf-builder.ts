@@ -2,7 +2,7 @@ import PDFDocument from 'pdfkit';
 import { loadFont, loadFallbackFont } from './assets-loader.js';
 import { renderCover } from './sections/cover.js';
 import { renderSection } from './sections/section-renderer.js';
-import { renderTableSection } from './sections/table-renderer.js';
+import { renderTableSection, renderTableGroupSection } from './sections/table-renderer.js';
 import { renderPageHeader, renderPageFooter } from './sections/page-chrome.js';
 import { theme as defaultTheme } from './theme.js';
 import type { Theme } from './theme.js';
@@ -84,10 +84,22 @@ export async function buildPdf(
     const section = sections[i];
     const hasItems = (section?.items?.length ?? 0) > 0;
     const hasTable = (section?.table?.rows.length ?? 0) > 0;
-    if (!section || (!hasItems && !hasTable)) continue;
+    const hasTables = (section?.tables?.some((t) => t.rows.length > 0)) ?? false;
+    if (!section || (!hasItems && !hasTable && !hasTables)) continue;
     doc.addPage({ size: 'A4', layout: config.orientation });
     renderPageHeader({ doc, headerTitle: config.headerTitle, reference: config.reference, theme });
-    if (hasTable && section.table) {
+    if (hasTables && section.tables) {
+      renderTableGroupSection({
+        doc,
+        number: i + 1,
+        title: section.title,
+        descriptor: section.descriptor,
+        tables: section.tables.filter((t) => t.rows.length > 0),
+        theme,
+        headerTitle: config.headerTitle,
+        reference: config.reference,
+      });
+    } else if (hasTable && section.table) {
       renderTableSection({
         doc,
         number: i + 1,
