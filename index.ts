@@ -89,7 +89,12 @@ export async function generatePdf(input: PdfReportInput, themeOverrides?: PdfThe
   }
 
   const hasSummary = typeof input.summary === 'string' && input.summary.trim().length > 0;
-  const hasSections = (input.sections ?? []).some((s) => (s.items?.length ?? 0) > 0 || (s.table?.rows.length ?? 0) > 0);
+  const hasSections = (input.sections ?? []).some(
+    (s) =>
+      (s.items?.length ?? 0) > 0 ||
+      (s.table?.rows.length ?? 0) > 0 ||
+      (s.tables?.some((t) => t.rows.length > 0) ?? false),
+  );
 
   if (!hasSummary && !hasSections) {
     throw new Error('PdfReportInput não contém conteúdo para renderizar (summary ou sections)');

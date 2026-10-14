@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { generatePdf } from '../index.js';
 import type { PdfReportInput } from '../types.js';
-import { extractPageSizes } from './pdf-geometry.js';
+import { extractPageSizes, searchTextBoxes } from './pdf-geometry.js';
 import { extractPagesText } from './pdf-text.js';
 
 const PDF_PREFIX = '%PDF-1.';
@@ -338,5 +338,137 @@ describe('kbr-pdf-service — generatePdf', () => {
     expect(allText).toContain('Invoice #1');
     expect(allText).toContain('Base');
     expect(allText).toContain('R$ 10,00');
+  });
+
+  it('VER010: seção com `tables` (múltiplas) empilha N tabelas e renderiza títulos/valores de todas', async () => {
+    const buffer = await generatePdf({
+      config: { orientation: 'landscape' },
+      sections: [
+        {
+          title: 'Resumo',
+          tables: [
+            {
+              title: 'Veículos dealers',
+              columns: [
+                { key: 'ref', label: 'Ref' },
+                { key: 'bruto', label: 'Valor bruto' },
+                { key: 'comissao', label: 'Total comissão' },
+              ],
+              rows: [
+                { cells: { ref: 'INV-A1', bruto: 'R$ 1.000,00', comissao: 'R$ 150,00' } },
+                { cells: { ref: 'INV-A2', bruto: 'R$ 2.000,00', comissao: 'R$ 300,00' } },
+              ],
+            },
+            {
+              title: 'Veículos kinto',
+              columns: [
+                { key: 'ref', label: 'Ref' },
+                { key: 'bruto', label: 'Valor bruto' },
+                { key: 'comissao', label: 'Total comissão' },
+              ],
+              rows: [{ cells: { ref: 'INV-K1', bruto: 'R$ 500,00', comissao: 'R$ 75,00' } }],
+            },
+            {
+              title: 'Total geral',
+              columns: [
+                { key: 'tipo', label: 'Tipo' },
+                { key: 'valor', label: 'Total comissão' },
+              ],
+              rows: [{ cells: { tipo: 'Total geral', valor: 'R$ 525,00' } }],
+            },
+          ],
+        },
+      ],
+    });
+    expect(buffer.subarray(0, PDF_PREFIX.length).toString('utf-8')).toBe(PDF_PREFIX);
+    const allText = extractPagesText(buffer).join('\n');
+    expect(allText).toContain('Veículos dealers');
+    expect(allText).toContain('Veículos kinto');
+    expect(allText).toContain('Total geral');
+    expect(allText).toContain('INV-A1');
+    expect(allText).toContain('INV-K1');
+    expect(allText).toContain('R$ 525,00');
+  });
+
+  it('VER010: tabela longa dentro de `tables` quebra para a próxima página repetindo o cabeçalho', async () => {
+    const buffer = await generatePdf({
+      config: { orientation: 'landscape' },
+      sections: [
+        {
+          title: 'Resumo',
+          tables: [
+            {
+              title: 'Veículos dealers',
+              columns: [
+                { key: 'ref', label: 'REFKEY' },
+                { key: 'valor', label: 'Valor' },
+              ],
+              rows: Array.from({ length: 120 }, (_, i) => ({
+                cells: { ref: `INV-${i}`, valor: `R$ ${i},00` },
+              })),
+            },
+            {
+              title: 'Total geral',
+              columns: [
+                { key: 'tipo', label: 'Tipo' },
+                { key: 'valor', label: 'Total comissão' },
+              ],
+              rows: [{ cells: { tipo: 'Total geral', valor: 'R$ 7.140,00' } }],
+            },
+          ],
+        },
+      ],
+    });
+    const sizes = extractPageSizes(buffer);
+    // capa + pelo menos 2 páginas da tabela longa
+    expect(sizes.length).toBeGreaterThanOrEqual(3);
+    // cabeçalho de coluna repetido em mais de uma página
+    const headerBoxes = searchTextBoxes(buffer, 'REFKEY');
+    const pagesWithHeader = new Set(headerBoxes.map((box) => box.pageIndex));
+    expect(pagesWithHeader.size).toBeGreaterThanOrEqual(2);
+    // a última linha (total geral) sobrevive à quebra
+    expect(extractPagesText(buffer).join('\n')).toContain('R$ 7.140,00');
+  });
+
+  it('VER010: modo `dense` compacta a tabela (mesmos dados geram menos páginas que o normal)', async () => {
+    const rows = Array.from({ length: 60 }, (_, i) => ({ cells: { ref: `INV-${i}`, valor: `R$ ${i},00` } }));
+    const columns = [
+      { key: 'ref', label: 'Ref' },
+      { key: 'valor', label: 'Valor' },
+    ];
+    const normal = await generatePdf({
+      config: { orientation: 'landscape' },
+      sections: [{ title: 'Resumo', tables: [{ title: 'T', columns, rows }] }],
+    });
+    const dense = await generatePdf({
+      config: { orientation: 'landscape' },
+      sections: [{ title: 'Resumo', tables: [{ title: 'T', dense: true, columns, rows }] }],
+    });
+    expect(extractPageSizes(dense).length).toBeLessThan(extractPageSizes(normal).length);
+  });
+
+  it('VER011 (retrocompat): quando `tables` e `table` coexistem, `tables` tem prioridade', async () => {
+    const buffer = await generatePdf({
+      config: { orientation: 'landscape' },
+      sections: [
+        {
+          title: 'Resumo',
+          table: {
+            columns: [{ key: 'legacy', label: 'Legacy' }],
+            rows: [{ cells: { legacy: 'LEGACY_SINGLE_TABLE' } }],
+          },
+          tables: [
+            {
+              title: 'Nova',
+              columns: [{ key: 'novo', label: 'Novo' }],
+              rows: [{ cells: { novo: 'NOVA_MULTI_TABELA' } }],
+            },
+          ],
+        },
+      ],
+    });
+    const allText = extractPagesText(buffer).join('\n');
+    expect(allText).toContain('NOVA_MULTI_TABELA');
+    expect(allText).not.toContain('LEGACY_SINGLE_TABLE');
   });
 });

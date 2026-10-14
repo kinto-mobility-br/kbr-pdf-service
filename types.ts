@@ -48,6 +48,8 @@ export interface PdfTableColumn {
    * Colunas sem `width` dividem igualmente o espaço restante.
    */
   width?: number;
+  /** Alinhamento horizontal do texto da coluna (cabeçalho e células). Default: 'left'. */
+  align?: 'left' | 'right' | 'center';
 }
 
 /** Linha de uma tabela de seção. */
@@ -56,10 +58,16 @@ export interface PdfTableRow {
   cells: Record<string, string>;
   /** Quando definida, destaca a linha (ex.: texto da célula em vermelho para falhas). */
   severity?: 'high' | 'medium' | 'low' | string;
+  /** Desenha o texto da linha em negrito/semibold (ex.: linha de total). */
+  bold?: boolean;
 }
 
 /** Tabela exibida em uma seção — alternativa mais compacta aos cards de `PdfSectionItem`. */
 export interface PdfTable {
+  /** Sub-título opcional desenhado acima do cabeçalho de colunas (ex.: ao empilhar tabelas via `PdfSection.tables`). */
+  title?: string;
+  /** Modo compacto: fonte, padding e alturas reduzidos (ex.: tabelas-resumo). Não afeta outras tabelas. */
+  dense?: boolean;
   columns: PdfTableColumn[];
   rows: PdfTableRow[];
 }
@@ -75,6 +83,11 @@ export interface PdfSection {
   descriptor?: string;
   items?: PdfSectionItem[];
   table?: PdfTable;
+  /**
+   * Várias tabelas empilhadas na mesma seção/página (cada uma com seu `title`).
+   * Quando presente e não-vazio, tem prioridade sobre `table` e `items`.
+   */
+  tables?: PdfTable[];
 }
 
 /** Card de overview exibido na base da capa. */
