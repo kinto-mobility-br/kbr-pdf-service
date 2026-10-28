@@ -3,6 +3,24 @@
 Histórico de mudanças deste repositório. Entradas são organizadas por data
 (mais recente no topo).
 
+## 2026-10-28 — Fonte única Inter em todos os PDFs e espaçamento de título mais generoso
+
+- **Fonte única Inter**: `theme.ts`/`assets-loader.ts` carregam apenas a família Inter como
+  padrão; a Toyota deixa de ser carregada automaticamente (arquivos `.ttf` da Toyota
+  permanecem no repositório, sem uso). Motivação: inconsistência visual entre relatórios
+  que usavam Toyota (billing, NFS-e) e o novo relatório de comissão, que precisa de Inter.
+- **Fallback de glifo por fonte/coluna vira no-op**: `text-fallback.ts` mantém a API pública
+  (`loadFallbackFont`, `theme.fallbackFonts.*`) para não quebrar os consumidores que já
+  registram fallback por coluna/cabeçalho, mas com fonte única não há mais glifo a
+  substituir — a função passa a devolver o texto original sem fator de escala.
+- **`titleGap` do modo `dense` aumentado de 3 para 10**: Inter precisa de mais respiro entre
+  título e cabeçalho da tabela do que a Toyota (altura de linha ≈1,21em contra ≈1,43em);
+  sem o ajuste o título colidia visualmente com o cabeçalho em tabelas compactas.
+- `README.md`/`USAGE.md` atualizados para refletir a fonte única e o novo `titleGap` dense.
+- **Blast radius**: além do relatório de comissão, `kbr-domain-billing` e `kbr-nfse-invoices`
+  consomem este pacote e herdarão o novo visual ao atualizar o lock — validação visual
+  desses dois repositórios fica pendente antes de cada um atualizar a dependência.
+
 ## 2026-10-13 — Múltiplas tabelas por página, modo compacto e refinamentos de tabela/ícone
 
 - **Nova capability — várias tabelas empilhadas numa seção/página** (`PdfSection.tables`):

@@ -25,11 +25,14 @@ essa geração num único lugar, com duas capacidades:
   rasterização de PDF em JPEG, para consumidores que precisam anexar ou
   reduzir o tamanho de arquivos antes de enviar por e-mail ou guardar em S3.
 
-Texto em português (com acentos e travessão) é sempre legível mesmo que a
-fonte de marca (Toyota Type) não tenha o glifo — o serviço troca
-automaticamente para uma fonte de fallback (Inter) só no trecho necessário,
-checando os glifos reais da fonte em vez de depender de uma lista fixa de
-caracteres conhecidos.
+Todo o texto de todos os PDFs usa uma única família, a **Inter** (cobre os
+acentos do português, travessão, `R$`, setas etc.). A Toyota Type deixou de ser
+usada por não ter glifos para `ã`, `õ`, `ç`, `â`, `ê`, `ô`, `à`, o que misturava
+fontes no mesmo documento. Os arquivos `Toyota-Type-*.ttf` continuam em
+`assets/fonts/` apenas para reversão (basta apontar `FONT_FILES` em
+`assets-loader.ts` e os nomes em `theme.fonts` de volta para eles). A API legada
+(`fallbackFonts`, `loadFallbackFont`, `drawTextWithFallback`,
+`drawSegmentedText`) é mantida como alias, sem troca de fonte nem escala.
 
 ---
 
@@ -56,7 +59,7 @@ consumida via `dist/` dentro da Lambda de quem a importa.
 | --- | --- |
 | Linguagem | TypeScript (`strict`, ESM) |
 | Build | `tsc` (`npm run build`, roda no `prepare`/`prepublishOnly`) |
-| Geração de PDF | `pdfkit` + `svg-to-pdfkit` (logos SVG) + `fontkit` (checagem de glifos para fallback de fonte) |
+| Geração de PDF | `pdfkit` + `svg-to-pdfkit` (logos SVG) + `fontkit` (usado nos testes para checar a cobertura de glifos da Inter) |
 | Processamento de imagem/PDF | `sharp` (compressão), `mupdf` (rasterização PDF→JPEG), `pdf-lib` (dev, testes de merge) |
 | Testes | Vitest |
 
@@ -79,7 +82,7 @@ própria com o bus compartilhado.
 ├── sections/                  # renderização de seção/tabela/capa/cabeçalho
 ├── processing/                 # entry point separado: compressão de imagem, merge/rasterização de PDF
 ├── assets/
-│   ├── fonts/                 # Toyota Type + Inter (fallback de glifo)
+│   ├── fonts/                 # Inter (fonte única); Toyota Type mantida só para reversão
 │   └── svg/                    # logos KINTO
 ├── scripts/                    # demo.ts, json-fields-pdf.ts, kinto-api-auth-pdf.ts
 └── __tests__/

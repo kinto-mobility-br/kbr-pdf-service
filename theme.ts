@@ -38,26 +38,23 @@ export const colors = {
   info: '#4A8FA3',
 } as const;
 
+/** Família única do serviço: Inter em todo o texto (a Toyota Type não tem glifos de pt-BR e não é mais usada). */
 export const fonts = {
-  regular: 'toyota-regular',
-  light: 'toyota-light',
-  book: 'toyota-book',
-  semibold: 'toyota-semibold',
-  bold: 'toyota-bold',
-  mono: 'Courier',
-} as const;
-
-/**
- * Fontes de fallback (Inter) registradas ao lado das Toyota Type, usadas
- * automaticamente por `drawTextWithFallback` (components/text-fallback.ts)
- * para os caracteres que a Toyota Type não suporta (ã, ç, õ, â, ê, ô, à).
- */
-export const fallbackFonts = {
   regular: 'inter-regular',
   light: 'inter-light',
   book: 'inter-book',
   semibold: 'inter-semibold',
   bold: 'inter-bold',
+  mono: 'Courier',
+} as const;
+
+/** Alias de `fonts`, mantido por compatibilidade de API: não há mais troca de fonte por caractere. */
+export const fallbackFonts = {
+  regular: fonts.regular,
+  light: fonts.light,
+  book: fonts.book,
+  semibold: fonts.semibold,
+  bold: fonts.bold,
 } as const;
 
 export const fontSizes: Record<

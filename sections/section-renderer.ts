@@ -205,9 +205,7 @@ export function renderSection(args: RenderSectionArgs): void {
 
         if (row.description) {
           doc.save().fillColor(colors.n600DarkElectricBlue);
-          // Fonte de fallback sempre forcada: descricoes de linha nao devem alternar entre
-          // Toyota Type/Inter dependendo so de ter ou nao diacritico no texto (ex.: "Locacao
-          // acima de X dias" vs "PROMOCODE - X% Desconto Concessionario").
+          // Fonte única (Inter): fallbackFonts.regular é alias de fonts.regular.
           drawTextInFallbackFont(
             doc,
             row.description,
