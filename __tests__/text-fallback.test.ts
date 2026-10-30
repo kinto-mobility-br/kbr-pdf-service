@@ -15,7 +15,7 @@ function createTestDoc(): PDFKit.PDFDocument {
 }
 
 describe('components/text-fallback — drawTextInFallbackFont', () => {
-  it('VER001 - usa sempre a fonte de fallback, mesmo para texto sem diacritico (ao contrario de drawTextWithFallback)', () => {
+  it('VER001 - usa a fonte informada em drawTextInFallbackFont, mesmo para texto sem diacritico', () => {
     const doc = createTestDoc();
     const fontSpy = vi.spyOn(doc, 'font');
 
@@ -38,18 +38,20 @@ describe('components/text-fallback — drawTextInFallbackFont', () => {
     doc.end();
   });
 
-  it('VER003 - equaliza o tamanho da fonte de fallback (mesmo fator usado por drawTextWithFallback)', () => {
+  it('VER003 (T14) - sem fator de escala: texto com acento usa a fonte principal e o tamanho nominal, igual a drawTextInFallbackFont', () => {
     const doc = createTestDoc();
+    const fontSpy = vi.spyOn(doc, 'font');
     const fontSizeSpy = vi.spyOn(doc, 'fontSize');
 
     drawTextWithFallback(doc, 'Locação acima de 15 dias', 10, 10, PRIMARY_FONT, FALLBACK_FONT, 10);
-    const scaledSizeFromExistingFallback = fontSizeSpy.mock.calls.find((call) => call[0] !== 10)?.[0];
+
+    expect(fontSpy).toHaveBeenCalledWith(PRIMARY_FONT);
+    expect(fontSpy).not.toHaveBeenCalledWith(FALLBACK_FONT);
+    expect(new Set(fontSizeSpy.mock.calls.map((call) => call[0]))).toEqual(new Set([10]));
     fontSizeSpy.mockClear();
 
     drawTextInFallbackFont(doc, 'PROMOCODE - 50% Desconto', 10, 30, FALLBACK_FONT, 10);
-    const scaledSizeFromForcedFallback = fontSizeSpy.mock.calls[0]?.[0];
-
-    expect(scaledSizeFromForcedFallback).toBe(scaledSizeFromExistingFallback);
+    expect(new Set(fontSizeSpy.mock.calls.map((call) => call[0]))).toEqual(new Set([10]));
     doc.end();
   });
 });

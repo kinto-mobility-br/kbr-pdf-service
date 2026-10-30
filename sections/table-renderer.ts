@@ -47,7 +47,7 @@ function resolveMetrics(theme: Theme, dense?: boolean): TableMetrics {
       bodyFontSize: 7.5,
       labelFontSize: 6,
       titleFontSize: 9,
-      titleGap: 3,
+      titleGap: 10,
       groupGap: 12,
       lineGap: 1,
     };

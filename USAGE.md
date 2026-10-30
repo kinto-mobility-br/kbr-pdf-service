@@ -10,18 +10,17 @@ Visual:
 - **Header**: logo `KINTO_SQ_BLUE` + título configurável + referência
 - **Cover**: logo `KINTO_BLUE` em destaque + kicker + título + metadata + summary + overview cards
 - **Footer**: texto confidencial + paginação automática
-- **Fontes**: família Toyota Type (Regular, Light, Book, Semibold, Bold)
+- **Fontes**: família única Inter (Regular, Light, Medium/book, SemiBold, Bold) em todo o texto
 
-> ℹ️ **Fallback automático de fonte**: a fonte Toyota Type não contém glifos
-> para `ã`, `ç`, `õ`, `â`, `ê`, `ô`, `à` (maiúsculas e minúsculas) nem para o
-> travessão `—` (confirmado via `fontkit`). Para não deixar esses caracteres
-> em branco no PDF, todo o texto do serviço é desenhado com
-> `drawTextWithFallback`/`drawSegmentedText` (`components/text-fallback.ts`),
-> que troca automaticamente para a fonte Inter (já incluída em
-> `assets/fonts/`) apenas nos trechos com caracteres não suportados pela
-> Toyota Type — sem modificar nenhum arquivo de fonte. Isso é feito
-> dinamicamente checando os glifos reais da fonte (via `fontkit`), então
-> cobre qualquer caractere ausente, não só os já conhecidos.
+> ℹ️ **Fonte única (Inter)**: a Toyota Type não tem glifos para `ã`, `ç`, `õ`,
+> `â`, `ê`, `ô`, `à` nem para o travessão `—`, o que misturava duas fontes no
+> mesmo PDF. Por isso o serviço usa somente a Inter (que cobre pt-BR, `R$`, `→`
+> etc.), em todos os PDFs. `theme.fallbackFonts`, `loadFallbackFont`,
+> `drawTextWithFallback` e `drawSegmentedText` continuam exportados como alias
+> (sem troca de fonte nem fator de escala). Para reverter, aponte `FONT_FILES`
+> em `assets-loader.ts` e `theme.fonts` de volta aos `Toyota-Type-*.ttf`, que
+> permanecem em `assets/fonts/`. Consumidores devem validar visualmente os PDFs
+> ao atualizar a dependência (métricas de linha da Inter são menores).
 
 ---
 
@@ -32,7 +31,7 @@ O service depende de:
 - `svg-to-pdfkit` (>=0.1.8) — renderização de SVG inline
 - `sharp` (>=0.35) — compressão de imagens
 - `mupdf` (>=1.27) — rasterização de PDF em JPEG (WASM)
-- Pasta `assets/` com `fonts/` (Toyota Type TTFs) e `svg/` (logos KINTO)
+- Pasta `assets/` com `fonts/` (Inter TTFs) e `svg/` (logos KINTO)
 - `gs` (Ghostscript) no PATH para lidar com PDFs criptografados (opcional)
 
 Essas dependências já estão no `package.json` do service.
@@ -395,11 +394,11 @@ O service espera encontrar os assets em `assets/` (relativo ao CWD ou ao source 
 ```
 assets/
 ├── fonts/
-│   ├── Toyota-Type.ttf
-│   ├── Toyota-Type-Light.ttf
-│   ├── Toyota-Type-Book.ttf
-│   ├── Toyota-Type-Semibold.ttf
-│   └── Toyota-Type-Bold.ttf
+│   ├── Inter-Regular.ttf
+│   ├── Inter-Light.ttf
+│   ├── Inter-Medium.ttf     ← peso "book"
+│   ├── Inter-SemiBold.ttf
+│   └── Inter-Bold.ttf       (Toyota-Type-*.ttf permanecem apenas para reversão)
 └── svg/
     ├── KINTO_BLUE.svg       ← Logo grande na capa
     ├── KINTO_SQ_BLUE.svg    ← Logo quadrado no header
