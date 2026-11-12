@@ -1,0 +1,30 @@
+{
+  "schema_version": 1, "diagram_type": "tree",
+  "meta": {
+    "title": "kbr-pdf-service (@kbr/pdf-service) — Estrutura",
+    "subtitle": "Biblioteca TypeScript de geração/processamento de PDF com branding KINTO, consumida como dependência por Lambdas de outros domínios KBR. Contenção por módulo (não chamadas).",
+    "output": "doc/diagramas/arquitetura.html",
+    "quality_profile": "showcase"
+  },
+  "nodes": [
+    { "id": "lib", "label": "@kbr/pdf-service", "sublabel": "biblioteca TS (ESM, tsc) — sem infra própria" },
+    { "id": "report", "label": "Geração de relatório", "parent": "lib", "sublabel": "entry index.ts · generatePdf" },
+    { "id": "builder", "label": "pdf-builder", "parent": "report", "sublabel": "capa, header, seções, footer; AES-256" },
+    { "id": "sections", "label": "sections/", "parent": "report", "sublabel": "section-renderer, table-renderer, cover, page-chrome" },
+    { "id": "components", "label": "components/", "parent": "report", "sublabel": "card, badge, layout, section-title, text-fallback" },
+    { "id": "theme", "label": "theme.ts", "parent": "report", "sublabel": "cores, fontes, spacing, overrides" },
+    { "id": "types", "label": "types.ts", "parent": "report", "sublabel": "PdfReportInput, PdfSection, ..." },
+    { "id": "processing", "label": "Processamento", "parent": "lib", "sublabel": "entry processing/ (export separado)" },
+    { "id": "imgcomp", "label": "image-compression", "parent": "processing", "sublabel": "sharp" },
+    { "id": "pdfattach", "label": "pdf-attachment", "parent": "processing", "sublabel": "merge (pdf-lib) + rasterização mupdf→JPEG" },
+    { "id": "assets", "label": "Assets & runtime", "parent": "lib", "sublabel": "incluídos em files[]" },
+    { "id": "loader", "label": "assets-loader.ts", "parent": "assets", "sublabel": "resolve fonts/svg em runtime" },
+    { "id": "fonts", "label": "assets/fonts", "parent": "assets", "sublabel": "Inter (fonte única); Toyota Type só p/ reversão" },
+    { "id": "svg", "label": "assets/svg", "parent": "assets", "sublabel": "logos KINTO (svg-to-pdfkit)" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Capacidades", "items": ["Relatório estruturado (metadata, resumo, seções com itens/tabelas, cards)", "Severidade por item (high/medium/low) e abertura protegida por senha (AES-256)", "Processamento: compressão de imagem, merge de PDFs e rasterização PDF→JPEG"] },
+    { "dot": "emerald", "title": "Stack", "items": ["TypeScript strict (ESM), build com tsc; testes com Vitest", "pdfkit + svg-to-pdfkit + fontkit; sharp, mupdf, pdf-lib", "Node.js 22.x; Ghostscript opcional para PDFs criptografados"] },
+    { "dot": "amber", "title": "Distribuição & consumo", "items": ["Não publicada em registry: pin github:kinto-mobility-br/kbr-pdf-service#main", "Consumidor conhecido: kbr-domain-dealers-commissions (relatório de comissão)", "Sem stack/conta AWS; falhas aparecem no log do domínio consumidor"] }
+  ]
+}

@@ -1,3 +1,12 @@
+<img src="doc/assets/kinto-logo.svg" alt="KINTO" height="34">
+
+## 📘 Documentação
+Arquitetura e integrações em **[`doc/`](doc/)** — [visão geral](doc/README.md) · [diagramas](doc/diagramas/).
+
+> **Agentes/devs:** ao mudar arquitetura, integrações, deploy ou auth, **atualizem `doc/` no mesmo PR** e regenerem os diagramas (archify). Veja [`doc/MANUTENCAO.md`](doc/MANUTENCAO.md).
+
+---
+
 # kbr-pdf-service
 
 Biblioteca TypeScript (`@kbr/pdf-service`) de geração e processamento de PDF
