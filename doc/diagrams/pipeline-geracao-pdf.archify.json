@@ -1,0 +1,269 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Pipeline de geração do PDF (generatePdf)",
+    "locale": "pt-BR",
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "legend": {
+      "entries": {
+        "backend": { "label": "Etapa do pipeline" },
+        "database": { "label": "Recurso compartilhado" },
+        "security": { "label": "Falha" },
+        "external": { "label": "Consumidor e saída" }
+      }
+    },
+    "output": "doc/diagrams/pipeline-geracao-pdf.html"
+  },
+  "lanes": [
+    {
+      "id": "entrada",
+      "label": "Entrada (index.ts)"
+    },
+    {
+      "id": "montagem",
+      "label": "Montagem (pdf-builder.ts)"
+    },
+    {
+      "id": "render",
+      "label": "Renderização (sections/)"
+    },
+    {
+      "id": "recursos",
+      "label": "Recursos de marca",
+      "variant": "exception"
+    }
+  ],
+  "phases": [
+    {
+      "id": "validar",
+      "label": "Validar",
+      "fromCol": 0,
+      "toCol": 1
+    },
+    {
+      "id": "montar",
+      "label": "Montar o documento",
+      "fromCol": 2,
+      "toCol": 4,
+      "variant": "emphasis"
+    },
+    {
+      "id": "finalizar",
+      "label": "Finalizar",
+      "fromCol": 5,
+      "toCol": 5,
+      "variant": "dashed"
+    }
+  ],
+  "mainPath": [
+    "consumer",
+    "generate",
+    "build",
+    "cover",
+    "body",
+    "footer",
+    "buffer"
+  ],
+  "nodes": [
+    {
+      "id": "consumer",
+      "lane": "entrada",
+      "col": 0,
+      "type": "external",
+      "label": "Lambda consumidora",
+      "sublabel": "PdfReportInput",
+      "width": 132
+    },
+    {
+      "id": "generate",
+      "lane": "entrada",
+      "col": 1,
+      "type": "backend",
+      "label": "generatePdf",
+      "sublabel": "valida o input",
+      "width": 132
+    },
+    {
+      "id": "fail",
+      "lane": "entrada",
+      "col": 2,
+      "type": "security",
+      "label": "Erro",
+      "sublabel": "sem conteúdo",
+      "width": 132
+    },
+    {
+      "id": "buffer",
+      "lane": "entrada",
+      "col": 5,
+      "type": "external",
+      "label": "Buffer do PDF",
+      "sublabel": "disco, SES ou S3",
+      "width": 132
+    },
+    {
+      "id": "build",
+      "lane": "montagem",
+      "col": 2,
+      "type": "backend",
+      "label": "buildPdf",
+      "sublabel": "A4, margens, AES-256",
+      "width": 132
+    },
+    {
+      "id": "footer",
+      "lane": "montagem",
+      "col": 5,
+      "type": "backend",
+      "label": "Rodapé e assinatura",
+      "sublabel": "paginação e assinatura",
+      "width": 132
+    },
+    {
+      "id": "cover",
+      "lane": "render",
+      "col": 3,
+      "type": "backend",
+      "label": "Capa",
+      "sublabel": "cabeçalho + capa",
+      "width": 132
+    },
+    {
+      "id": "body",
+      "lane": "render",
+      "col": 4,
+      "type": "backend",
+      "label": "Seções",
+      "sublabel": "itens ou tabelas",
+      "width": 132
+    },
+    {
+      "id": "theme",
+      "lane": "recursos",
+      "col": 2,
+      "type": "database",
+      "label": "theme.ts",
+      "sublabel": "cores, fontes, spacing",
+      "width": 132
+    },
+    {
+      "id": "assets",
+      "lane": "recursos",
+      "col": 3,
+      "type": "database",
+      "label": "assets-loader.ts",
+      "sublabel": "fontes Inter + logos SVG",
+      "width": 132
+    },
+    {
+      "id": "components",
+      "lane": "recursos",
+      "col": 4,
+      "type": "database",
+      "label": "components/",
+      "sublabel": "card, badge, título, texto",
+      "width": 132
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-input",
+      "from": "consumer",
+      "to": "generate",
+      "variant": "default"
+    },
+    {
+      "id": "e-valid",
+      "from": "generate",
+      "to": "build",
+      "label": "conteúdo válido",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e-fail",
+      "from": "generate",
+      "to": "fail",
+      "label": "inválido",
+      "variant": "security",
+      "role": "error"
+    },
+    {
+      "id": "e-cover",
+      "from": "build",
+      "to": "cover",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e-body",
+      "from": "cover",
+      "to": "body",
+      "label": "uma página por seção",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e-footer",
+      "from": "body",
+      "to": "footer",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e-theme",
+      "from": "theme",
+      "to": "build",
+      "label": "tema",
+      "variant": "dashed"
+    },
+    {
+      "id": "e-assets",
+      "from": "assets",
+      "to": "cover",
+      "label": "logos",
+      "variant": "dashed"
+    },
+    {
+      "id": "e-components",
+      "from": "components",
+      "to": "body",
+      "label": "blocos",
+      "variant": "dashed"
+    },
+    {
+      "id": "e-out",
+      "from": "footer",
+      "to": "buffer",
+      "label": "PDF gerado",
+      "variant": "emphasis",
+      "role": "return"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Decisões de montagem",
+      "items": [
+        "Seções sem itens nem tabelas são ignoradas",
+        "A seção usa o renderizador de grupo de tabelas, de tabela única ou de itens, nessa ordem de prioridade",
+        "Os overrides de tema (generatePdf) mesclam só spacing e fontSizes sobre o tema padrão",
+        "O rodapé é desenhado ao final, com o total de páginas conhecido"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Recursos de marca",
+      "items": [
+        "theme.ts define cores, fontes, spacing e o aviso de documento sensível",
+        "assets-loader.ts carrega a Inter (fonte única) e os logos SVG KINTO",
+        "capa e cabeçalho/rodapé usam svg-to-pdfkit para os logos"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Fora deste fluxo",
+      "items": [
+        "Compressão de imagem e junção/rasterização de PDF ficam em processing/ (entry point separado)"
+      ]
+    }
+  ]
+}

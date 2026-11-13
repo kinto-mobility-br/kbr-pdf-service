@@ -3,6 +3,15 @@
 Histórico de mudanças deste repositório. Entradas são organizadas por data
 (mais recente no topo).
 
+## 2026-11-12 — Documentação consolidada em `docs.html` com diagrama Archify
+
+- **`docs.html` consolidado** (ADR-0030): README, `USAGE.md` e este CHANGELOG passam a ser
+  entregues num único `docs.html` na raiz, gerado por `scripts/docs` a partir de
+  `doc/docs-site.json`.
+- **Novo diagrama Archify do pipeline de geração do PDF**
+  (`doc/diagrams/pipeline-geracao-pdf.archify.json`), criado do zero (não há diagrama anterior
+  migrado); nenhum código do pacote muda.
+
 ## 2026-10-28 — Fonte única Inter em todos os PDFs e espaçamento de título mais generoso
 
 - **Fonte única Inter**: `theme.ts`/`assets-loader.ts` carregam apenas a família Inter como

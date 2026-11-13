@@ -1,0 +1,9 @@
+{
+  "title": "KBR PDF Service — Documentação",
+  "output": "docs.html",
+  "groups": [
+    { "label": "Visão geral", "docs": ["README.md"] },
+    { "label": "Referência técnica", "docs": ["USAGE.md"] },
+    { "label": "Histórico", "docs": ["CHANGELOG.md"] }
+  ]
+}

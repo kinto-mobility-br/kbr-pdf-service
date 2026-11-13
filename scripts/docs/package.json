@@ -1,0 +1,15 @@
+{
+  "name": "docs-site",
+  "private": true,
+  "type": "module",
+  "description": "Gera docs.html (documentação consolidada) e os diagramas Archify do repositório.",
+  "scripts": {
+    "install-archify": "node render-diagrams.mjs --install",
+    "diagrams": "node render-diagrams.mjs",
+    "build": "node build-docs.mjs",
+    "check": "node build-docs.mjs --check"
+  },
+  "dependencies": {
+    "marked": "18.2.0"
+  }
+}

@@ -48,6 +48,16 @@ desenvolvimento via GitHub, não publicada em registry):
 
 ---
 
+## Documentação
+
+| Documento | Descrição |
+| --- | --- |
+| [docs.html](docs.html) | Documentação consolidada (README, guia de uso, CHANGELOG) com diagramas interativos; abrir no navegador |
+| [USAGE.md](USAGE.md) | Guia de uso e referência da API |
+| [CHANGELOG.md](CHANGELOG.md) | Histórico de mudanças |
+
+---
+
 ## Arquitetura e stack
 
 Biblioteca TypeScript pura (sem infraestrutura AWS própria — nenhum
@@ -62,6 +72,8 @@ consumida via `dist/` dentro da Lambda de quem a importa.
 | Geração de PDF | `pdfkit` + `svg-to-pdfkit` (logos SVG) + `fontkit` (usado nos testes para checar a cobertura de glifos da Inter) |
 | Processamento de imagem/PDF | `sharp` (compressão), `mupdf` (rasterização PDF→JPEG), `pdf-lib` (dev, testes de merge) |
 | Testes | Vitest |
+
+[Pipeline de geração do PDF](doc/diagrams/pipeline-geracao-pdf.html)
 
 ### Eventos
 
@@ -128,6 +140,20 @@ const buffer = await generatePdf({
 ```bash
 npm test          # vitest run
 npm run typecheck # tsc --noEmit
+```
+
+## Gerar a documentação consolidada
+
+O `docs.html` (raiz) é gerado a partir dos Markdown listados em
+`doc/docs-site.json` e dos diagramas Archify em `doc/**/*.archify.json`; não
+editar à mão. Após alterar um documento listado ou um diagrama:
+
+```bash
+npm --prefix scripts/docs install                  # primeira vez
+npm --prefix scripts/docs run install-archify      # primeira vez (Archify fixado em v3.2.0)
+npm --prefix scripts/docs run diagrams             # regenera os diagramas (.html ao lado do .archify.json)
+npm --prefix scripts/docs run build                # regenera o docs.html
+npm --prefix scripts/docs run check                # falha se o docs.html estiver defasado
 ```
 
 ## Deploy

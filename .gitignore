@@ -1,3 +1,7 @@
 node_modules/
 dist/
 tmp/
+
+# Receipts de entrega do Archify (diagramas em doc/**/*.archify.json)
+*.delivery.json
+*.delivery-pending.json
